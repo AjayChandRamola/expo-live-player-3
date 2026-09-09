@@ -1,98 +1,276 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+/**
+ * Home Screen — Clean & Safe Version
+ */
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { useRouter } from "expo-router";
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import {
+  ActivityIndicator,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  useColorScheme,
+  View,
+} from "react-native";
+import { VideoFeed } from "../../components/VideoFeed";
+import { Colors } from "../../constants/theme";
+import { useVideoPlayerContext } from "../../contexts/VideoPlayerContext";
+import type { VideoMetadata } from "../../types/video";
+import Logger from "../../utils/Logger";
 
-export default function HomeScreen() {
+// Sanitize input
+const sanitizeText = (text: unknown, max = 200): string =>
+  typeof text === "string"
+    ? text.replace(/[\u0000-\u001F\u007F]/g, "").trim().slice(0, max)
+    : "";
+
+function HomeScreen() {
+  const router = useRouter();
+  const colorScheme = useColorScheme();
+  const theme = colorScheme === "dark" ? Colors.dark : Colors.light;
+
+  const { setVideoList, playVideoById } = useVideoPlayerContext();
+
+  const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [isSearchMode, setIsSearchMode] = useState(false);
+  const [allVideos, setAllVideos] = useState<VideoMetadata[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const mountedRef = useRef(false);
+
+  // Log initial mount
+  useEffect(() => {
+    if (!mountedRef.current) {
+      Logger.info("[HomeScreen] Mounted with theme:", colorScheme);
+      mountedRef.current = true;
+    }
+  }, [colorScheme]);
+
+  // Debounce search input
+  useEffect(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    const trimmed = query.trim();
+
+    if (trimmed.length === 0) {
+      setDebouncedQuery("");
+      setIsSearchMode(false);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearchMode(true);
+    setIsSearching(true);
+
+    debounceTimerRef.current = setTimeout(() => {
+      setDebouncedQuery(trimmed);
+      setIsSearching(false);
+    }, 500);
+
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = null;
+      }
+    };
+  }, [query]);
+
+  const setVideoListRef = useRef(setVideoList);
+  const lastVideoListRef = useRef("");
+
+  useEffect(() => {
+    setVideoListRef.current = setVideoList;
+  }, [setVideoList]);
+
+  const handleVideosLoaded = useCallback(
+    (videos: VideoMetadata[]) => {
+      const ids = videos.map((v) => v.id).join(",");
+
+      if (lastVideoListRef.current === ids && videos.length === allVideos.length) {
+        return;
+      }
+
+      lastVideoListRef.current = ids;
+
+      requestAnimationFrame(() => {
+        setAllVideos(videos);
+        setVideoListRef.current(videos);
+      });
+    },
+    [allVideos.length]
+  );
+
+  const handleVideoPress = useCallback(
+    (video: VideoMetadata) => {
+      const safeId = sanitizeText(video.id, 64);
+      if (!safeId) return;
+
+      playVideoById(safeId);
+      router.push(`/video/${encodeURIComponent(safeId)}`);
+    },
+    [router, playVideoById]
+  );
+
+  const handleSearchChange = useCallback((text: string) => {
+    const sanitized = sanitizeText(text, 100);
+    setQuery(sanitized);
+  }, []);
+
+  const handleSearchSubmit = useCallback(() => {
+    const trimmed = query.trim();
+    if (trimmed.length === 0) {
+      setDebouncedQuery("");
+      setIsSearchMode(false);
+      setIsSearching(false);
+      return;
+    }
+
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
+
+    setDebouncedQuery(trimmed);
+    setIsSearching(false);
+    setIsSearchMode(true);
+  }, [query]);
+
+  const handleClearSearch = useCallback(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
+
+    setQuery("");
+    setDebouncedQuery("");
+    setIsSearchMode(false);
+    setIsSearching(false);
+  }, []);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <View style={[styles.root, { backgroundColor: theme.background }]}>
+      <View style={styles.header}>
+        <Text style={[styles.headerTitle, { color: theme.text }]}>
+          Yagna Vishnu Bhagwan
+        </Text>
+        <Text style={[styles.headerSubtitle, { color: theme.subtle }]}>
+          Divya Darshan
+        </Text>
+      </View>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      <View style={styles.searchContainer}>
+        <View style={styles.searchRow}>
+          <TextInput
+            value={query}
+            onChangeText={handleSearchChange}
+            onSubmitEditing={handleSearchSubmit}
+            placeholder="Search videos..."
+            placeholderTextColor={theme.placeholder}
+            style={[
+              styles.searchInput,
+              {
+                color: theme.text,
+                backgroundColor: theme.inputBackground,
+                borderColor: isSearchMode ? theme.tint : theme.border,
+              },
+            ]}
+            autoCapitalize="none"
+            autoCorrect={false}
+            returnKeyType="search"
+          />
+
+          {isSearching && (
+            <View style={styles.searchIndicator}>
+              <ActivityIndicator size="small" color={theme.tint} />
+            </View>
+          )}
+
+          {query.length > 0 && (
+            <Pressable onPress={handleClearSearch} style={styles.clearBtn}>
+              <Text style={[styles.clearText, { color: theme.tint }]}>×</Text>
+            </Pressable>
+          )}
+        </View>
+      </View>
+
+      <VideoFeed
+        key="video-feed"
+        pageSize={10}
+        variant="auto"
+        onVideoPress={handleVideoPress}
+        onVideosLoaded={handleVideosLoaded}
+        searchQuery={debouncedQuery}
+        isSearchMode={isSearchMode}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  root: { flex: 1 },
+  header: {
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === "ios" ? 8 : 16,
+    paddingBottom: 12,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    marginBottom: 2,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  headerSubtitle: {
+    fontSize: 14,
+    opacity: 0.7,
+  },
+  searchContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+  searchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    position: "relative",
+  },
+  searchIndicator: {
+    position: "absolute",
+    right: 50,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  searchInput: {
+    flex: 1,
+    height: 44,
+    borderRadius: 22,
+    paddingHorizontal: 18,
+    paddingRight: 50,
+    borderWidth: 1,
+    fontSize: 15,
+  },
+  clearBtn: {
+    position: "absolute",
+    right: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  clearText: {
+    fontSize: 18,
+    fontWeight: "600",
   },
 });
+
+export default memo(HomeScreen);
