@@ -1,7 +1,11 @@
 // __tests__/services/mediaSourceResolver.test.ts
 import { resolvePlayable, resolveEmbed } from "../../services/mediaSourceResolver";
 import { isAppError } from "../../services/appError";
+import * as contentSourceConfig from "../../services/contentSourceConfig";
 import type { Video, LiveSession, SourceDescriptor } from "../../types/domain";
+
+jest.mock("../../services/contentSourceConfig");
+const mockedConfig = contentSourceConfig as jest.Mocked<typeof contentSourceConfig>;
 
 function videoWith(source: SourceDescriptor): Video {
   return {
@@ -34,6 +38,15 @@ function codeOf(fn: () => unknown): string {
   }
   return "did-not-throw";
 }
+
+beforeEach(() => {
+  mockedConfig.getContentSourceConfig.mockReturnValue({
+    mode: "development",
+    apiBaseUrl: "",
+    allowedMediaHosts: [],
+    liveSourceFallback: "none",
+  });
+});
 
 describe("resolvePlayable", () => {
   it("accepts an HTTPS HLS url", () => {
@@ -150,5 +163,43 @@ describe("resolveEmbed", () => {
         resolveEmbed(sessionWith({ kind: "youtube", url: "https://youtu.be/abc" })),
       ),
     ).toBe("invalid_source");
+  });
+});
+
+describe("resolvePlayable production allowlist", () => {
+  it("rejects a host outside the production allowlist", () => {
+    mockedConfig.getContentSourceConfig.mockReturnValue({
+      mode: "production",
+      apiBaseUrl: "",
+      allowedMediaHosts: ["cdn.yagna.example"],
+      liveSourceFallback: "none",
+    });
+    expect(
+      codeOf(() => resolvePlayable(videoWith({ kind: "mp4", url: "https://other.test/a.mp4" }))),
+    ).toBe("invalid_source");
+  });
+
+  it("accepts a host inside the production allowlist", () => {
+    mockedConfig.getContentSourceConfig.mockReturnValue({
+      mode: "production",
+      apiBaseUrl: "",
+      allowedMediaHosts: ["cdn.yagna.example"],
+      liveSourceFallback: "none",
+    });
+    const result = resolvePlayable(
+      videoWith({ kind: "mp4", url: "https://cdn.yagna.example/a.mp4" }),
+    );
+    expect(result.url).toBe("https://cdn.yagna.example/a.mp4");
+  });
+
+  it("allows any host when the allowlist is empty, even in production", () => {
+    mockedConfig.getContentSourceConfig.mockReturnValue({
+      mode: "production",
+      apiBaseUrl: "",
+      allowedMediaHosts: [],
+      liveSourceFallback: "none",
+    });
+    const result = resolvePlayable(videoWith({ kind: "mp4", url: "https://other.test/a.mp4" }));
+    expect(result.url).toBe("https://other.test/a.mp4");
   });
 });

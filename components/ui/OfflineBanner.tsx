@@ -21,7 +21,7 @@ export function OfflineBanner({ testID }: OfflineBannerProps) {
       style={[styles.bar, { backgroundColor: colors.danger }]}
       accessibilityRole="alert"
     >
-      <Text style={styles.text}>You're offline. Some content may be unavailable.</Text>
+      <Text style={styles.text}>You are offline. Some content may be unavailable.</Text>
     </View>
   );
 }

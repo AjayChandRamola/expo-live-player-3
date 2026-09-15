@@ -10,6 +10,7 @@
  */
 import { MEDIA, YOUTUBE_EMBED } from "../constants/config";
 import { makeError } from "./appError";
+import { getContentSourceConfig } from "./contentSourceConfig";
 import type {
   EmbedTarget,
   LiveSession,
@@ -62,6 +63,16 @@ export function resolvePlayable(input: Video | LiveSession): PlayableSource {
   );
   if (!supported) {
     throw makeError("unsupported_source");
+  }
+
+  // In production, once an allowlist is configured, a source must come from
+  // one of those hosts. An empty list means the allowlist has not been
+  // configured yet, not that everything is allowed.
+  const { mode, allowedMediaHosts } = getContentSourceConfig();
+  if (mode === "production" && allowedMediaHosts.length > 0) {
+    if (!allowedMediaHosts.includes(parsed.hostname)) {
+      throw makeError("invalid_source");
+    }
   }
 
   // The declared kind wins over the extension: a backend may legitimately
