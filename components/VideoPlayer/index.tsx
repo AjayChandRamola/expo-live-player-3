@@ -174,6 +174,10 @@ const VideoPlayer: React.FC<Props> = ({
   const [showSave, setShowSave] = useState(false);
   const [showMore, setShowMore] = useState(false);
 
+  // Track playback status. Declared before useVideoProgress because that hook
+  // reads isPlaying in its options object.
+  const [isPlaying, setIsPlaying] = useState(autoplay);
+
   // Video progress tracking
   const { position, duration, buffered, isLoaded: progressLoaded, seek } = useVideoProgress({
     player,
@@ -210,8 +214,6 @@ const VideoPlayer: React.FC<Props> = ({
     return () => subscription?.remove();
   }, []);
 
-  // Track playback status
-  const [isPlaying, setIsPlaying] = useState(autoplay);
   const [isLoaded, setIsLoaded] = useState(false);
   
   useEffect(() => {
