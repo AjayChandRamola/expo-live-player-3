@@ -43,6 +43,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "contentMode": "development",
+      "apiBaseUrl": "https://api.yagna.example",
+      "allowedMediaHosts": [],
+      "liveSourceFallback": "youtube"
     }
   }
 }
