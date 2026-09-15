@@ -1,110 +1,113 @@
-// -----------------------------------------------------------------------------
-// File: app/settings.tsx
-// -----------------------------------------------------------------------------
+// app/settings.tsx
+import React, { useCallback } from "react";
+import { ScrollView, StyleSheet, Switch, Text, useColorScheme, View } from "react-native";
+import { Pressable } from "react-native";
+import { Stack } from "expo-router";
+import Constants from "expo-constants";
+import { getColors, tokens } from "../constants/tokens";
+import { useSettings } from "../contexts/SettingsContext";
+import { usePlayQueue } from "../contexts/PlayQueueContext";
+import type { ThemePreference } from "../services/storage/settingsStorage";
 
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
-import { useThemeColors, Colors } from "../constants/theme";
-import Logger from "../utils/Logger";
+const THEME_OPTIONS: readonly { value: ThemePreference; label: string }[] = [
+  { value: "system", label: "System" },
+  { value: "light", label: "Light" },
+  { value: "dark", label: "Dark" },
+];
 
 export default function SettingsScreen() {
-  const systemTheme = useThemeColors(); // current system theme
-  const [useDark, setUseDark] = useState(systemTheme.background === "#151718");
+  const scheme = useColorScheme() === "dark" ? "dark" : "light";
+  const colors = getColors(scheme);
+  const { theme, autoplayDefault, setTheme, setAutoplayDefault } = useSettings();
+  const { setAutoplay } = usePlayQueue();
 
-  // manually pick theme
-  const theme = useDark ? Colors.dark : Colors.light;
-
-  useEffect(() => {
-    Logger.info("[UI] SettingsScreen mounted");
-    return () => Logger.info("[UI] SettingsScreen unmounted");
-  }, []);
-
-  const toggleTheme = () => {
-    setUseDark((prev) => !prev);
-    Logger.info(`[UI] Theme toggled → ${!useDark ? "Dark Mode" : "Light Mode"}`);
-  };
+  const handleAutoplayChange = useCallback(
+    (value: boolean) => {
+      setAutoplayDefault(value);
+      setAutoplay(value);
+    },
+    [setAutoplayDefault, setAutoplay],
+  );
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: theme.background }]}
-      contentContainerStyle={{ padding: 20 }}
-    >
-      {/* Title */}
-      <Text style={[styles.title, { color: theme.text }]}>Settings</Text>
-
-      {/* Section: Theme Info */}
-      <View style={[styles.section, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-        <Text style={[styles.label, { color: theme.icon }]}>Current Theme</Text>
-        <Text style={[styles.value, { color: theme.text }]}>
-          {useDark ? "Dark Mode" : "Light Mode"}
-        </Text>
-      </View>
-
-      {/* Button: Toggle Theme */}
-      <TouchableOpacity
-        activeOpacity={0.8}
-        style={[styles.button, { backgroundColor: theme.tint }]}
-        onPress={toggleTheme}
+    <>
+      <Stack.Screen options={{ title: "Settings" }} />
+      <ScrollView
+        style={[styles.container, { backgroundColor: colors.background }]}
+        contentContainerStyle={styles.content}
       >
-        <Text style={[styles.buttonText, { color: theme.background }]}>
-          Switch to {useDark ? "Light" : "Dark"} Mode
-        </Text>
-      </TouchableOpacity>
+        <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>Appearance</Text>
+        <View style={[styles.section, { backgroundColor: colors.surface }]}>
+          {THEME_OPTIONS.map((option) => {
+            const selected = theme === option.value;
+            return (
+              <Pressable
+                key={option.value}
+                testID={`theme-${option.value}`}
+                onPress={() => setTheme(option.value)}
+                accessibilityRole="radio"
+                accessibilityState={{ selected }}
+                accessibilityLabel={option.label}
+                style={styles.row}
+              >
+                <Text style={[styles.rowLabel, { color: colors.text }]}>{option.label}</Text>
+                {selected ? (
+                  <Text style={[styles.checkmark, { color: colors.primary }]}>✓</Text>
+                ) : null}
+              </Pressable>
+            );
+          })}
+        </View>
 
-      {/* Example Action */}
-      <TouchableOpacity
-        activeOpacity={0.7}
-        style={[styles.button, { backgroundColor: theme.tint }]}
-        onPress={() => Logger.info("[UI] Example button pressed")}
-      >
-        <Text style={[styles.buttonText, { color: theme.background }]}>Check for Updates</Text>
-      </TouchableOpacity>
+        <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>Playback</Text>
+        <View style={[styles.section, { backgroundColor: colors.surface }]}>
+          <View style={styles.row}>
+            <Text style={[styles.rowLabel, { color: colors.text }]}>Autoplay next video</Text>
+            <Switch
+              testID="autoplay-toggle"
+              value={autoplayDefault}
+              onValueChange={handleAutoplayChange}
+              accessibilityLabel="Autoplay next video"
+            />
+          </View>
+        </View>
 
-      {/* Footer */}
-      <Text style={[styles.footer, { color: theme.icon }]}>
-        Built with Expo Router & Dynamic Theme Support
-      </Text>
-    </ScrollView>
+        <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>About</Text>
+        <View style={[styles.section, { backgroundColor: colors.surface }]}>
+          <View style={styles.row}>
+            <Text style={[styles.rowLabel, { color: colors.text }]}>Version</Text>
+            <Text testID="settings-version" style={[styles.rowValue, { color: colors.textMuted }]}>
+              {Constants.expoConfig?.version ?? "—"}
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: "700",
-    marginBottom: 20,
+  container: { flex: 1 },
+  content: { padding: tokens.spacing.lg },
+  sectionTitle: {
+    ...tokens.typography.caption,
+    fontWeight: "600",
+    marginTop: tokens.spacing.lg,
+    marginBottom: tokens.spacing.sm,
   },
   section: {
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
+    borderRadius: tokens.radius.md,
+    overflow: "hidden",
   },
-  label: {
-    fontSize: 14,
-    fontWeight: "500",
-    marginBottom: 6,
-  },
-  value: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  button: {
-    borderRadius: 10,
-    paddingVertical: 14,
+  row: {
+    flexDirection: "row",
     alignItems: "center",
-    marginTop: 10,
+    justifyContent: "space-between",
+    paddingHorizontal: tokens.spacing.md,
+    paddingVertical: tokens.spacing.md,
+    minHeight: tokens.touchTarget.min,
   },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  footer: {
-    fontSize: 13,
-    textAlign: "center",
-    marginTop: 40,
-  },
+  rowLabel: { ...tokens.typography.body },
+  rowValue: { ...tokens.typography.body },
+  checkmark: { ...tokens.typography.body, fontWeight: "700" },
 });
