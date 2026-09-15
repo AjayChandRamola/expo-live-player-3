@@ -77,6 +77,13 @@ type Props = {
   chapters?: any;
   hideControlsTimeout?: number;
   theme?: string;
+  // Video metadata — consumed by the action bar, share sheet, and overflow menu.
+  // videoId must be a non-empty string for the action bar and progress bar to render
+  // (see the guards at the `!isFullscreen && !isMinimized && videoId` conditions below).
+  videoId?: string;
+  videoTitle?: string;
+  videoUrl?: string;
+  channelId?: string;
 };
 
 const DEFAULT_BUTTON_SIZE = 80;
