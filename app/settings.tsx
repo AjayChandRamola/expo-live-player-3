@@ -1,11 +1,11 @@
 // -----------------------------------------------------------------------------
-// File: app/(tabs)/settings.tsx
+// File: app/settings.tsx
 // -----------------------------------------------------------------------------
 
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
-import { useThemeColors, Colors } from "../../constants/theme";
-import Logger from "../../utils/Logger";
+import { useThemeColors, Colors } from "../constants/theme";
+import Logger from "../utils/Logger";
 
 export default function SettingsScreen() {
   const systemTheme = useThemeColors(); // current system theme
