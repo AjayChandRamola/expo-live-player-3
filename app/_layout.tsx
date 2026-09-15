@@ -1,13 +1,16 @@
 // app/_layout.tsx
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import * as Linking from "expo-linking";
+import { useEffect } from "react";
 import "react-native-reanimated";
 
 import { PlayQueueProvider } from "@/contexts/PlayQueueContext";
 import { SavedProvider } from "@/contexts/SavedContext";
 import { SettingsProvider, useSettings } from "@/contexts/SettingsContext";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { parseDeepLink } from "@/services/deepLinkService";
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -27,6 +30,19 @@ function RootLayoutInner() {
   const systemColorScheme = useColorScheme();
   const { theme, autoplayDefault } = useSettings();
   const colorScheme = theme === "system" ? systemColorScheme : theme;
+  const router = useRouter();
+  const url = Linking.useURL();
+
+  useEffect(() => {
+    if (!url) return;
+    const target = parseDeepLink(url);
+    if (target.kind === "video") {
+      router.push(`/video/${target.id}`);
+    } else if (target.kind === "live") {
+      router.push("/live");
+    }
+    // "home" needs no navigation: the app already opens there.
+  }, [url, router]);
 
   return (
     <PlayQueueProvider initialAutoplay={autoplayDefault}>
