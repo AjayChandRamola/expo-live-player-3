@@ -9,8 +9,7 @@ import { Screen } from "../../components/ui/Screen";
 import { StateView } from "../../components/ui/StateView";
 import { IconButton } from "../../components/ui/IconButton";
 import { getColors, tokens } from "../../constants/tokens";
-// TODO(Increment 3): replace with usePlayQueue() once PlayQueueContext exists.
-import { useVideoPlayerContext } from "../../contexts/VideoPlayerContext";
+import { usePlayQueue } from "../../contexts/PlayQueueContext";
 import { useHomeContent } from "../../hooks/useHomeContent";
 import type { Video } from "../../types/domain";
 import type { VideoMetadata } from "../../types/video";
@@ -44,7 +43,7 @@ export default function HomeScreen() {
   const scheme = useColorScheme() === "dark" ? "dark" : "light";
   const colors = getColors(scheme);
 
-  const { setVideoList } = useVideoPlayerContext();
+  const { setQueue } = usePlayQueue();
   const { status, data, error, retry } = useHomeContent();
 
   const latestMetadata = useMemo(
@@ -54,10 +53,10 @@ export default function HomeScreen() {
 
   const handleVideoPress = useCallback(
     (video: VideoMetadata) => {
-      setVideoList(latestMetadata);
+      setQueue(data?.latest ?? [], video.id);
       router.push(`/video/${encodeURIComponent(video.id)}`);
     },
-    [router, setVideoList, latestMetadata],
+    [router, setQueue, data?.latest],
   );
 
   const handleFeaturedPress = useCallback(

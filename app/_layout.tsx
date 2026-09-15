@@ -4,9 +4,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 
-// TODO(Increment 3): swap VideoPlayerProvider for PlayQueueProvider once the
-// context is narrowed and renamed.
-import { VideoPlayerProvider } from "@/contexts/VideoPlayerContext";
+import { PlayQueueProvider } from "@/contexts/PlayQueueContext";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
 export const unstable_settings = {
@@ -17,7 +15,7 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
 
   return (
-    <VideoPlayerProvider>
+    <PlayQueueProvider>
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -27,6 +25,6 @@ export default function RootLayout() {
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>
-    </VideoPlayerProvider>
+    </PlayQueueProvider>
   );
 }

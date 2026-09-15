@@ -20,9 +20,9 @@ jest.mock("../../components/VideoFeed", () => ({
   VideoFeed: () => null,
 }));
 
-const mockSetVideoList = jest.fn();
-jest.mock("../../contexts/VideoPlayerContext", () => ({
-  useVideoPlayerContext: () => ({ setVideoList: mockSetVideoList, playVideoById: jest.fn() }),
+const mockSetQueue = jest.fn();
+jest.mock("../../contexts/PlayQueueContext", () => ({
+  usePlayQueue: () => ({ setQueue: mockSetQueue }),
 }));
 
 const mockedHook = useHomeContentModule as jest.Mocked<typeof useHomeContentModule>;
