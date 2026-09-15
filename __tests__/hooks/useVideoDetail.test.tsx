@@ -70,9 +70,10 @@ describe("useVideoDetail", () => {
     content.getVideoById.mockResolvedValue(video);
     media.resolvePlayable.mockReturnValue({ kind: "hls", url: video.source.url });
 
-    const { rerender } = renderHook(({ id }) => useVideoDetail(id), {
-      initialProps: { id: "v1" },
-    });
+    const { rerender } = renderHook(
+      ({ id }: { id: string }) => useVideoDetail(id),
+      { initialProps: { id: "v1" } },
+    );
     await waitFor(() => expect(content.getVideoById).toHaveBeenCalledWith("v1"));
 
     rerender({ id: "v2" });
