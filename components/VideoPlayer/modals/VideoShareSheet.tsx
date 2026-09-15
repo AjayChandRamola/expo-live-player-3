@@ -11,8 +11,8 @@
 
 import React, { useEffect } from "react";
 import { Share, Platform, Alert } from "react-native";
-import * as Linking from "expo-linking";
 import Logger from "../../../utils/Logger";
+import { forVideo } from "../../../services/shareLinkService";
 
 interface VideoShareSheetProps {
   /**
@@ -57,19 +57,20 @@ export function VideoShareSheet({
 
     const shareVideo = async () => {
       try {
-        const shareUrl = url || `https://example.com/video/${videoId}`;
-        const shareMessage = `${title}\n\n${shareUrl}`;
+        // Never share `url` (the raw media URL) — it may carry a signed
+        // token. Recipients get the app's deep link instead.
+        const deepLink = forVideo(videoId);
+        const shareMessage = `${title}\n\n${deepLink}`;
 
         Logger.info("[VideoShareSheet] Opening native share sheet", {
           videoId,
           title,
-          url: shareUrl,
         });
 
         const result = await Share.share(
           {
             message: Platform.OS === "android" ? shareMessage : title,
-            url: Platform.OS === "ios" ? shareUrl : undefined,
+            url: Platform.OS === "ios" ? deepLink : undefined,
             title: title,
           },
           {
