@@ -29,6 +29,7 @@ interface VideoCardProps {
   variant?: "list" | "grid";
   onPress?: (video: VideoMetadata) => void;
   style?: ViewStyle;
+  testID?: string;
 }
 
 /**
@@ -84,7 +85,7 @@ const formatTimeAgo = (isoDate: string): string => {
   }
 };
 
-const VideoCard: React.FC<VideoCardProps> = ({ video, variant = "list", onPress, style }) => {
+const VideoCard: React.FC<VideoCardProps> = ({ video, variant = "list", onPress, style, testID }) => {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
@@ -123,6 +124,7 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, variant = "list", onPress,
 
   return (
     <Pressable
+      testID={testID}
       onPress={handlePress}
       style={({ pressed }) => [
         containerStyle,

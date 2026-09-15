@@ -9,27 +9,8 @@ import UpNextList from "../../components/VideoFeed/UpNextList";
 import { usePlayQueue } from "../../contexts/PlayQueueContext";
 import { useVideoDetail } from "../../hooks/useVideoDetail";
 import { useRelatedVideos } from "../../hooks/useRelatedVideos";
-import type { Video } from "../../types/domain";
+import { toVideoMetadata } from "../../services/videoMetadataAdapter";
 import type { VideoMetadata } from "../../types/video";
-
-function toVideoMetadata(video: Video): VideoMetadata {
-  return {
-    id: video.id,
-    title: video.title,
-    description: video.description,
-    thumbnailUrl: video.thumbnailUrl,
-    videoUrl: video.source.url,
-    duration: video.durationSec,
-    views: video.viewCount ?? 0,
-    uploadedAt: video.publishedAt,
-    channelName: video.channel.name,
-    channelAvatar: video.channel.avatarUrl,
-    channelId: video.channel.id,
-    tags: video.tags ? [...video.tags] : undefined,
-    captions: video.captions ? [...video.captions] : undefined,
-    chapters: video.chapters ? [...video.chapters] : undefined,
-  };
-}
 
 function sanitizeId(raw: string | string[] | undefined): string | undefined {
   const value = Array.isArray(raw) ? raw[0] : raw;

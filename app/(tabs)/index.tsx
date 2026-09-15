@@ -11,32 +11,9 @@ import { IconButton } from "../../components/ui/IconButton";
 import { getColors, tokens } from "../../constants/tokens";
 import { usePlayQueue } from "../../contexts/PlayQueueContext";
 import { useHomeContent } from "../../hooks/useHomeContent";
+import { toVideoMetadata } from "../../services/videoMetadataAdapter";
 import type { Video } from "../../types/domain";
 import type { VideoMetadata } from "../../types/video";
-
-/**
- * Temporary bridge: VideoFeed (and its VideoCard children) still expect the
- * legacy VideoMetadata shape. Increment 3 migrates VideoFeed to the domain
- * Video type and this adapter is deleted.
- */
-function toVideoMetadata(video: Video): VideoMetadata {
-  return {
-    id: video.id,
-    title: video.title,
-    description: video.description,
-    thumbnailUrl: video.thumbnailUrl,
-    videoUrl: video.source.url,
-    duration: video.durationSec,
-    views: video.viewCount ?? 0,
-    uploadedAt: video.publishedAt,
-    channelName: video.channel.name,
-    channelAvatar: video.channel.avatarUrl,
-    channelId: video.channel.id,
-    tags: video.tags ? [...video.tags] : undefined,
-    captions: video.captions ? [...video.captions] : undefined,
-    chapters: video.chapters ? [...video.chapters] : undefined,
-  };
-}
 
 export default function HomeScreen() {
   const router = useRouter();
