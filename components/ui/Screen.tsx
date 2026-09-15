@@ -7,6 +7,7 @@ import React from "react";
 import { StyleSheet, useColorScheme, View, type ViewProps } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getColors } from "../../constants/tokens";
+import { OfflineBanner } from "./OfflineBanner";
 
 export interface ScreenProps extends ViewProps {
   readonly children?: React.ReactNode;
@@ -32,6 +33,7 @@ export function Screen({ children, style, testID, ...rest }: ScreenProps) {
       ]}
       {...rest}
     >
+      <OfflineBanner testID={testID ? `${testID}-offline` : undefined} />
       {children}
     </View>
   );
