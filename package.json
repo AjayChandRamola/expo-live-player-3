@@ -95,7 +95,7 @@
       "**/__tests__/**/*.test.[jt]s?(x)"
     ],
     "setupFilesAfterEnv": [
-      "@testing-library/react-native/extend-expect"
+      "@testing-library/react-native/build/matchers/extend-expect"
     ],
     "moduleNameMapper": {
       "\\.svg$": "<rootDir>/__mocks__/svgMock.js"
