@@ -1,6 +1,6 @@
 // components/Saved/SavedList.tsx
 import React, { useCallback } from "react";
-import { FlatList, StyleSheet, View } from "react-native";
+import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import VideoCard from "../VideoFeed/VideoCard";
 import { IconButton } from "../ui/IconButton";
 import { toVideoMetadata } from "../../services/videoMetadataAdapter";
@@ -11,9 +11,19 @@ export interface SavedListProps {
   readonly videos: readonly Video[];
   readonly onPressVideo: (video: Video) => void;
   readonly onUnsave: (id: string) => void;
+  readonly testID?: string;
+  readonly refreshing?: boolean;
+  readonly onRefresh?: () => void;
 }
 
-export function SavedList({ videos, onPressVideo, onUnsave }: SavedListProps) {
+export function SavedList({
+  videos,
+  onPressVideo,
+  onUnsave,
+  testID,
+  refreshing,
+  onRefresh,
+}: SavedListProps) {
   const renderItem = useCallback(
     ({ item }: { item: Video }) => (
       <View style={styles.row}>
@@ -37,9 +47,13 @@ export function SavedList({ videos, onPressVideo, onUnsave }: SavedListProps) {
 
   return (
     <FlatList
+      testID={testID}
       data={videos as Video[]}
       keyExtractor={(item) => item.id}
       renderItem={renderItem}
+      refreshControl={
+        onRefresh ? <RefreshControl refreshing={refreshing ?? false} onRefresh={onRefresh} /> : undefined
+      }
     />
   );
 }

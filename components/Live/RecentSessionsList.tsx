@@ -1,6 +1,6 @@
 // components/Live/RecentSessionsList.tsx
 import React, { useCallback } from "react";
-import { FlatList, Pressable, StyleSheet, Text, useColorScheme, View } from "react-native";
+import { FlatList, Pressable, RefreshControl, StyleSheet, Text, useColorScheme, View } from "react-native";
 import { getColors, tokens } from "../../constants/tokens";
 import type { LiveSession } from "../../types/domain";
 
@@ -8,9 +8,17 @@ export interface RecentSessionsListProps {
   readonly sessions: readonly LiveSession[];
   readonly onSelect: (session: LiveSession) => void;
   readonly testID?: string;
+  readonly refreshing?: boolean;
+  readonly onRefresh?: () => void;
 }
 
-export function RecentSessionsList({ sessions, onSelect, testID }: RecentSessionsListProps) {
+export function RecentSessionsList({
+  sessions,
+  onSelect,
+  testID,
+  refreshing,
+  onRefresh,
+}: RecentSessionsListProps) {
   const scheme = useColorScheme() === "dark" ? "dark" : "light";
   const colors = getColors(scheme);
 
@@ -37,6 +45,9 @@ export function RecentSessionsList({ sessions, onSelect, testID }: RecentSession
       data={sessions as LiveSession[]}
       keyExtractor={(item) => item.id}
       renderItem={renderItem}
+      refreshControl={
+        onRefresh ? <RefreshControl refreshing={refreshing ?? false} onRefresh={onRefresh} /> : undefined
+      }
     />
   );
 }

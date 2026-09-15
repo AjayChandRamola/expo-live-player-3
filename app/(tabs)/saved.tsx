@@ -20,6 +20,7 @@ export default function SavedScreen() {
   const { toggleSave } = useSaved();
   const { setQueue } = usePlayQueue();
   const { status, data, error, retry, missingIds } = useSavedVideos();
+  const isRefreshing = status === "loading";
 
   const [undoId, setUndoId] = useState<string | null>(null);
   const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -71,7 +72,14 @@ export default function SavedScreen() {
               </Text>
             </View>
           ) : null}
-          <SavedList videos={data} onPressVideo={handlePressVideo} onUnsave={handleUnsave} />
+          <SavedList
+            testID="saved-list"
+            videos={data}
+            onPressVideo={handlePressVideo}
+            onUnsave={handleUnsave}
+            refreshing={isRefreshing}
+            onRefresh={retry}
+          />
         </>
       ) : null}
 

@@ -14,6 +14,7 @@ export default function LiveScreen() {
   const router = useRouter();
   const isFocused = useIsFocused();
   const { status, data, error, retry } = useLiveStatus({ enabled: isFocused });
+  const isRefreshing = status === "loading";
   const [recentSessions, setRecentSessions] = useState<LiveSession[]>([]);
 
   useEffect(() => {
@@ -57,7 +58,9 @@ export default function LiveScreen() {
           <RecentSessionsList
             sessions={recentSessions}
             onSelect={handleSelectSession}
-            testID="live-recent"
+            testID="live-list"
+            refreshing={isRefreshing}
+            onRefresh={retry}
           />
         </>
       ) : null}

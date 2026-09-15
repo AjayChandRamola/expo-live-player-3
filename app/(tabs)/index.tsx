@@ -24,6 +24,7 @@ export default function HomeScreen() {
 
   const { setQueue } = usePlayQueue();
   const { status, data, error, retry } = useHomeContent();
+  const isRefreshing = status === "loading";
   const liveStatus = useLiveStatus({ enabled: true });
 
   const latestMetadata = useMemo(
@@ -95,10 +96,13 @@ export default function HomeScreen() {
           <SectionHeader title="Latest" />
           <VideoFeed
             key="video-feed"
+            testID="home-list"
             initialVideos={latestMetadata}
             pageSize={10}
             variant="auto"
             onVideoPress={handleVideoPress}
+            refreshing={isRefreshing}
+            onRefresh={retry}
           />
         </>
       ) : null}
