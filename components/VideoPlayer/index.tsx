@@ -32,6 +32,7 @@ import {
   Modal,
   SafeAreaView,
 } from "react-native";
+import type { StyleProp, ViewStyle } from "react-native";
 import { VideoView, useVideoPlayer } from "expo-video";
 import * as ScreenOrientation from "expo-screen-orientation";
 import PlayPauseButton from "./PlayPauseButton";
@@ -256,7 +257,7 @@ const VideoPlayer: React.FC<Props> = ({
           // Heuristic to determine left vs right (simple threshold)
           const isLeft =
             typeof locX === "number"
-              ? locX < (evt.currentTarget as any)?.clientWidth / 2 ?? 200
+              ? locX < ((evt.currentTarget as any)?.clientWidth ?? 400) / 2
               : typeof pageX === "number"
               ? pageX < 200
               : false;
@@ -703,7 +704,7 @@ const VideoPlayer: React.FC<Props> = ({
 
   // Video style for proper centering and filling
   // In non-fullscreen, use contain to ensure full video visibility with letterboxing
-  const videoStyle = isFullscreen
+  const videoStyle: StyleProp<ViewStyle> = isFullscreen
     ? {
         position: "absolute" as const,
         top: 0,
@@ -755,7 +756,7 @@ const VideoPlayer: React.FC<Props> = ({
   }, [resizeMode, isFullscreen, isPortrait, dimensions.width, dimensions.height, VIDEO_ASPECT_RATIO]);
 
   // Touchable style for proper fullscreen coverage
-  const touchableStyle = isFullscreen
+  const touchableStyle: StyleProp<ViewStyle> = isFullscreen
     ? {
         position: "absolute" as const,
         top: 0,
@@ -780,7 +781,7 @@ const VideoPlayer: React.FC<Props> = ({
         <VideoView
           style={videoStyle}
           player={player}
-          contentFit={resizeMode === "contain" ? "contain" : resizeMode === "cover" ? "cover" : "fill"}
+          contentFit={resizeMode === "contain" ? "contain" : "fill"}
           nativeControls={false}
           allowsFullscreen={false}
         />
@@ -1016,7 +1017,7 @@ const VideoPlayer: React.FC<Props> = ({
             onClose={() => setShowMore(false)}
             onNotInterested={notInterested}
             onReport={() => report("inappropriate")}
-            onDontRecommendChannel={(channelId) => dontRecommendChannel(channelId || "")}
+            onDontRecommendChannel={() => dontRecommendChannel(channelId ?? "")}
           />
         </>
       )}
