@@ -1,5 +1,5 @@
 // app/(tabs)/live.tsx
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback } from "react";
 import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { Screen } from "../../components/ui/Screen";
@@ -7,7 +7,7 @@ import { StateView } from "../../components/ui/StateView";
 import { LiveHero } from "../../components/Live/LiveHero";
 import { RecentSessionsList } from "../../components/Live/RecentSessionsList";
 import { useLiveStatus } from "../../hooks/useLiveStatus";
-import { getRecentSessions } from "../../services/liveService";
+import { useRecentSessions } from "../../hooks/useRecentSessions";
 import type { LiveSession } from "../../types/domain";
 
 export default function LiveScreen() {
@@ -15,22 +15,8 @@ export default function LiveScreen() {
   const isFocused = useIsFocused();
   const { status, data, error, retry } = useLiveStatus({ enabled: isFocused });
   const isRefreshing = status === "loading";
-  const [recentSessions, setRecentSessions] = useState<LiveSession[]>([]);
-
-  useEffect(() => {
-    let cancelled = false;
-    getRecentSessions()
-      .then((sessions) => {
-        if (!cancelled) setRecentSessions(sessions);
-      })
-      .catch(() => {
-        // Recent sessions are a supplementary list; a failure here does not
-        // block the live hero above it.
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const recentSessionsResult = useRecentSessions();
+  const recentSessions = recentSessionsResult.data ?? [];
 
   const handleWatchReplay = useCallback(
     (videoId: string) => {
