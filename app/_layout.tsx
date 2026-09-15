@@ -5,6 +5,7 @@ import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 
 import { PlayQueueProvider } from "@/contexts/PlayQueueContext";
+import { SavedProvider } from "@/contexts/SavedContext";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
 export const unstable_settings = {
@@ -15,16 +16,18 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
 
   return (
-    <PlayQueueProvider>
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="video/[id]" options={{ headerShown: false }} />
-          <Stack.Screen name="search" options={{ title: "Search" }} />
-          <Stack.Screen name="settings" options={{ title: "Settings" }} />
-        </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
-    </PlayQueueProvider>
+    <SavedProvider>
+      <PlayQueueProvider>
+        <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="video/[id]" options={{ headerShown: false }} />
+            <Stack.Screen name="search" options={{ title: "Search" }} />
+            <Stack.Screen name="settings" options={{ title: "Settings" }} />
+          </Stack>
+          <StatusBar style="auto" />
+        </ThemeProvider>
+      </PlayQueueProvider>
+    </SavedProvider>
   );
 }
