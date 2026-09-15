@@ -1,0 +1,21 @@
+# Coding & Architecture Rules
+
+- Follow KISS, DRY, SOLID, and YAGNI; prefer simple, readable, maintainable code over clever solutions.
+- Search existing components, hooks, utilities, services, types, and patterns before creating new ones.
+- Reuse existing code; avoid duplication, unnecessary abstractions, and premature generalization.
+- Keep modules focused; avoid giant files, circular dependencies, deep nesting, and tight coupling.
+- Use strict TypeScript, meaningful names, and explicit types; avoid `any`, `@ts-ignore`, `@ts-nocheck`, dead code, and unused imports.
+- Replace magic values with named constants or design tokens where appropriate.
+- Separate UI, domain logic, data access, infrastructure, and navigation responsibilities.
+- Keep business logic independent of UI and navigation.
+- Preserve public APIs and existing architecture unless a change is justified and approved.
+- Do not refactor unrelated code during feature work.
+- Do not change architecture without documenting the reason, alternatives, and impact.
+- Prefer small, incremental, reviewable changes with minimal diffs.
+- Follow existing project conventions, dependencies, and established patterns.
+- Remove temporary code, unused abstractions, and unnecessary dependencies before completion.
+- Prefer composition and clear interfaces over inheritance and tight coupling.
+- Design for testability; inject external dependencies where appropriate.
+- Maintain clear dependency direction; higher-level modules must not depend on low-level implementation details unnecessarily.
+- Handle errors explicitly; avoid swallowed exceptions, unsafe fallbacks, and hidden failures.
+- Keep configuration, environment-specific behavior, and feature flags separate from core business logic.
