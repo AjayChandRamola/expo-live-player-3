@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AppError, Loadable, LoadStatus } from "../types/result";
 import { toAppError } from "../services/appError";
+import { useIsOnline } from "./useIsOnline";
 
 interface UseLoadableOptions<T> {
   /** Must be stable (wrap in useCallback in the caller). */
@@ -25,6 +26,7 @@ export function useLoadable<T>({
   const requestIdRef = useRef(0);
   const mountedRef = useRef(true);
   const [nonce, setNonce] = useState(0);
+  const { reportNetworkFailure, reportSuccess } = useIsOnline();
 
   useEffect(() => {
     mountedRef.current = true;
@@ -44,16 +46,19 @@ export function useLoadable<T>({
 
     load()
       .then((result) => {
+        reportSuccess();
         if (!mountedRef.current || id !== requestIdRef.current) return;
         setData(result);
         setStatus(isEmpty?.(result) ? "empty" : "success");
       })
       .catch((caught: unknown) => {
-        if (!mountedRef.current || id !== requestIdRef.current) return;
         const appError = toAppError(caught);
+        if (appError.code === "network") reportNetworkFailure();
+        if (!mountedRef.current || id !== requestIdRef.current) return;
         setError(appError);
         setStatus(appError.code === "network" ? "offline" : "error");
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [load, isEmpty, enabled, nonce]);
 
   const retry = useCallback(() => setNonce((n) => n + 1), []);
