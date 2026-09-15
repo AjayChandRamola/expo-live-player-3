@@ -54,6 +54,19 @@ jest.mock("expo-screen-orientation", () => ({
   },
 }));
 
+// VideoSaveSheet (a VideoPlayer modal) now reads useSaved() from
+// SavedContext instead of the removed playlist service.
+jest.mock("../../contexts/SavedContext", () => ({
+  useSaved: () => ({
+    savedIds: [],
+    hydrated: true,
+    isSaved: () => false,
+    isLiked: () => false,
+    toggleSave: jest.fn(),
+    toggleLike: jest.fn(),
+  }),
+}));
+
 const MP4 = "https://example.test/video.mp4";
 
 describe("VideoPlayer", () => {
