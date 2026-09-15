@@ -1,276 +1,134 @@
-/**
- * Home Screen — Clean & Safe Version
- */
-
+// app/(tabs)/index.tsx
 import { useRouter } from "expo-router";
-import React, {
-  memo,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import {
-  ActivityIndicator,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  useColorScheme,
-  View,
-} from "react-native";
+import React, { useCallback, useMemo } from "react";
+import { Platform, StyleSheet, Text, View, useColorScheme } from "react-native";
 import { VideoFeed } from "../../components/VideoFeed";
-import { Colors } from "../../constants/theme";
+import { FeaturedYagnaCard } from "../../components/Home/FeaturedYagnaCard";
+import { SectionHeader } from "../../components/Home/SectionHeader";
+import { Screen } from "../../components/ui/Screen";
+import { StateView } from "../../components/ui/StateView";
+import { IconButton } from "../../components/ui/IconButton";
+import { getColors, tokens } from "../../constants/tokens";
+// TODO(Increment 3): replace with usePlayQueue() once PlayQueueContext exists.
 import { useVideoPlayerContext } from "../../contexts/VideoPlayerContext";
+import { useHomeContent } from "../../hooks/useHomeContent";
+import type { Video } from "../../types/domain";
 import type { VideoMetadata } from "../../types/video";
-import Logger from "../../utils/Logger";
 
-// Sanitize input
-const sanitizeText = (text: unknown, max = 200): string =>
-  typeof text === "string"
-    ? text.replace(/[\u0000-\u001F\u007F]/g, "").trim().slice(0, max)
-    : "";
+/**
+ * Temporary bridge: VideoFeed (and its VideoCard children) still expect the
+ * legacy VideoMetadata shape. Increment 3 migrates VideoFeed to the domain
+ * Video type and this adapter is deleted.
+ */
+function toVideoMetadata(video: Video): VideoMetadata {
+  return {
+    id: video.id,
+    title: video.title,
+    description: video.description,
+    thumbnailUrl: video.thumbnailUrl,
+    videoUrl: video.source.url,
+    duration: video.durationSec,
+    views: video.viewCount ?? 0,
+    uploadedAt: video.publishedAt,
+    channelName: video.channel.name,
+    channelAvatar: video.channel.avatarUrl,
+    channelId: video.channel.id,
+    tags: video.tags ? [...video.tags] : undefined,
+    captions: video.captions ? [...video.captions] : undefined,
+    chapters: video.chapters ? [...video.chapters] : undefined,
+  };
+}
 
-function HomeScreen() {
+export default function HomeScreen() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const theme = colorScheme === "dark" ? Colors.dark : Colors.light;
+  const scheme = useColorScheme() === "dark" ? "dark" : "light";
+  const colors = getColors(scheme);
 
-  const { setVideoList, playVideoById } = useVideoPlayerContext();
+  const { setVideoList } = useVideoPlayerContext();
+  const { status, data, error, retry } = useHomeContent();
 
-  const [query, setQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
-  const [isSearchMode, setIsSearchMode] = useState(false);
-  const [allVideos, setAllVideos] = useState<VideoMetadata[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const mountedRef = useRef(false);
-
-  // Log initial mount
-  useEffect(() => {
-    if (!mountedRef.current) {
-      Logger.info("[HomeScreen] Mounted with theme:", colorScheme);
-      mountedRef.current = true;
-    }
-  }, [colorScheme]);
-
-  // Debounce search input
-  useEffect(() => {
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    const trimmed = query.trim();
-
-    if (trimmed.length === 0) {
-      setDebouncedQuery("");
-      setIsSearchMode(false);
-      setIsSearching(false);
-      return;
-    }
-
-    setIsSearchMode(true);
-    setIsSearching(true);
-
-    debounceTimerRef.current = setTimeout(() => {
-      setDebouncedQuery(trimmed);
-      setIsSearching(false);
-    }, 500);
-
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-        debounceTimerRef.current = null;
-      }
-    };
-  }, [query]);
-
-  const setVideoListRef = useRef(setVideoList);
-  const lastVideoListRef = useRef("");
-
-  useEffect(() => {
-    setVideoListRef.current = setVideoList;
-  }, [setVideoList]);
-
-  const handleVideosLoaded = useCallback(
-    (videos: VideoMetadata[]) => {
-      const ids = videos.map((v) => v.id).join(",");
-
-      if (lastVideoListRef.current === ids && videos.length === allVideos.length) {
-        return;
-      }
-
-      lastVideoListRef.current = ids;
-
-      requestAnimationFrame(() => {
-        setAllVideos(videos);
-        setVideoListRef.current(videos);
-      });
-    },
-    [allVideos.length]
+  const latestMetadata = useMemo(
+    () => (data?.latest ?? []).map(toVideoMetadata),
+    [data?.latest],
   );
 
   const handleVideoPress = useCallback(
     (video: VideoMetadata) => {
-      const safeId = sanitizeText(video.id, 64);
-      if (!safeId) return;
-
-      playVideoById(safeId);
-      router.push(`/video/${encodeURIComponent(safeId)}`);
+      setVideoList(latestMetadata);
+      router.push(`/video/${encodeURIComponent(video.id)}`);
     },
-    [router, playVideoById]
+    [router, setVideoList, latestMetadata],
   );
 
-  const handleSearchChange = useCallback((text: string) => {
-    const sanitized = sanitizeText(text, 100);
-    setQuery(sanitized);
-  }, []);
-
-  const handleSearchSubmit = useCallback(() => {
-    const trimmed = query.trim();
-    if (trimmed.length === 0) {
-      setDebouncedQuery("");
-      setIsSearchMode(false);
-      setIsSearching(false);
-      return;
-    }
-
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-      debounceTimerRef.current = null;
-    }
-
-    setDebouncedQuery(trimmed);
-    setIsSearching(false);
-    setIsSearchMode(true);
-  }, [query]);
-
-  const handleClearSearch = useCallback(() => {
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-      debounceTimerRef.current = null;
-    }
-
-    setQuery("");
-    setDebouncedQuery("");
-    setIsSearchMode(false);
-    setIsSearching(false);
-  }, []);
+  const handleFeaturedPress = useCallback(
+    (video: Video) => {
+      router.push(`/video/${encodeURIComponent(video.id)}`);
+    },
+    [router],
+  );
 
   return (
-    <View style={[styles.root, { backgroundColor: theme.background }]}>
+    <Screen testID="home-screen">
       <View style={styles.header}>
-        <Text style={[styles.headerTitle, { color: theme.text }]}>
-          Yagna Vishnu Bhagwan
-        </Text>
-        <Text style={[styles.headerSubtitle, { color: theme.subtle }]}>
-          Divya Darshan
-        </Text>
-      </View>
-
-      <View style={styles.searchContainer}>
-        <View style={styles.searchRow}>
-          <TextInput
-            value={query}
-            onChangeText={handleSearchChange}
-            onSubmitEditing={handleSearchSubmit}
-            placeholder="Search videos..."
-            placeholderTextColor={theme.placeholder}
-            style={[
-              styles.searchInput,
-              {
-                color: theme.text,
-                backgroundColor: theme.inputBackground,
-                borderColor: isSearchMode ? theme.tint : theme.border,
-              },
-            ]}
-            autoCapitalize="none"
-            autoCorrect={false}
-            returnKeyType="search"
+        <View>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Yagna Vishnu Bhagwan</Text>
+          <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>Divya Darshan</Text>
+        </View>
+        <View style={styles.headerActions}>
+          <IconButton
+            testID="home-search-button"
+            icon="magnify"
+            accessibilityLabel="Search"
+            onPress={() => router.push("/search")}
           />
-
-          {isSearching && (
-            <View style={styles.searchIndicator}>
-              <ActivityIndicator size="small" color={theme.tint} />
-            </View>
-          )}
-
-          {query.length > 0 && (
-            <Pressable onPress={handleClearSearch} style={styles.clearBtn}>
-              <Text style={[styles.clearText, { color: theme.tint }]}>×</Text>
-            </Pressable>
-          )}
+          <IconButton
+            testID="home-settings-button"
+            icon="cog-outline"
+            accessibilityLabel="Settings"
+            onPress={() => router.push("/settings")}
+          />
         </View>
       </View>
 
-      <VideoFeed
-        key="video-feed"
-        pageSize={10}
-        variant="auto"
-        onVideoPress={handleVideoPress}
-        onVideosLoaded={handleVideosLoaded}
-        searchQuery={debouncedQuery}
-        isSearchMode={isSearchMode}
-      />
-    </View>
+      <StateView status={status} error={error} onRetry={retry} testID="home-state" />
+
+      {status === "success" ? (
+        <>
+          {data?.featured ? (
+            <>
+              <SectionHeader title="Featured Yagna" />
+              <FeaturedYagnaCard
+                testID="home-featured"
+                video={data.featured}
+                onPress={handleFeaturedPress}
+              />
+            </>
+          ) : null}
+
+          <SectionHeader title="Latest" />
+          <VideoFeed
+            key="video-feed"
+            initialVideos={latestMetadata}
+            pageSize={10}
+            variant="auto"
+            onVideoPress={handleVideoPress}
+          />
+        </>
+      ) : null}
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
   header: {
-    paddingHorizontal: 16,
-    paddingTop: Platform.OS === "ios" ? 8 : 16,
-    paddingBottom: 12,
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-    marginBottom: 2,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    opacity: 0.7,
-  },
-  searchContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-  },
-  searchRow: {
     flexDirection: "row",
     alignItems: "center",
-    position: "relative",
+    justifyContent: "space-between",
+    paddingHorizontal: tokens.spacing.lg,
+    paddingTop: Platform.OS === "ios" ? tokens.spacing.sm : tokens.spacing.lg,
+    paddingBottom: tokens.spacing.md,
   },
-  searchIndicator: {
-    position: "absolute",
-    right: 50,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  searchInput: {
-    flex: 1,
-    height: 44,
-    borderRadius: 22,
-    paddingHorizontal: 18,
-    paddingRight: 50,
-    borderWidth: 1,
-    fontSize: 15,
-  },
-  clearBtn: {
-    position: "absolute",
-    right: 8,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  clearText: {
-    fontSize: 18,
-    fontWeight: "600",
-  },
+  headerTitle: { ...tokens.typography.heading, marginBottom: 2 },
+  headerSubtitle: tokens.typography.caption,
+  headerActions: { flexDirection: "row", gap: tokens.spacing.sm },
 });
-
-export default memo(HomeScreen);

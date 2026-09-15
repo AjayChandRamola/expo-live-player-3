@@ -22,6 +22,7 @@ export default function RootLayout() {
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="video/[id]" options={{ headerShown: false }} />
+          <Stack.Screen name="search" options={{ title: "Search" }} />
           <Stack.Screen name="settings" options={{ title: "Settings" }} />
         </Stack>
         <StatusBar style="auto" />
