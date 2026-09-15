@@ -65,11 +65,11 @@ export function getColors(scheme: ColorScheme): Palette {
 }
 
 const typography = {
-  title: { fontSize: 24, fontWeight: "600" } as TextStyle,
-  heading: { fontSize: 18, fontWeight: "600" } as TextStyle,
-  body: { fontSize: 15, fontWeight: "400" } as TextStyle,
-  caption: { fontSize: 12, fontWeight: "400" } as TextStyle,
-} as const;
+  title: { fontSize: 24, fontWeight: "600" },
+  heading: { fontSize: 18, fontWeight: "600" },
+  body: { fontSize: 15, fontWeight: "400" },
+  caption: { fontSize: 12, fontWeight: "400" },
+} as const satisfies Record<string, TextStyle>;
 
 export const tokens = {
   spacing: { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 },

@@ -24,10 +24,10 @@ describe("design tokens", () => {
       "danger",
       "skeleton",
     ];
-    const light = getColors("light");
+    const light = getColors("light") as unknown as Record<string, string>;
     for (const role of required) {
       expect(light).toHaveProperty(role);
-      expect(typeof (light as Record<string, string>)[role]).toBe("string");
+      expect(typeof light[role]).toBe("string");
     }
   });
 
