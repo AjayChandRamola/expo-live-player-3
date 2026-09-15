@@ -18,7 +18,7 @@ export function LiveEndedOverlay({ replayVideoId, onWatchReplay, testID }: LiveE
       <Text style={[styles.title, { color: colors.text }]}>This live session has ended</Text>
       {replayVideoId ? (
         <Pressable
-          testID={`${testID}-replay`}
+          testID={`${testID}-button`}
           onPress={() => onWatchReplay(replayVideoId)}
           accessibilityRole="button"
           accessibilityLabel="Watch replay"

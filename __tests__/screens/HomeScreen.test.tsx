@@ -25,6 +25,10 @@ jest.mock("../../contexts/PlayQueueContext", () => ({
   usePlayQueue: () => ({ setQueue: mockSetQueue }),
 }));
 
+jest.mock("../../hooks/useLiveStatus", () => ({
+  useLiveStatus: () => ({ status: "success", data: null, error: null, retry: jest.fn() }),
+}));
+
 const mockedHook = useHomeContentModule as jest.Mocked<typeof useHomeContentModule>;
 
 function video(id: string): Video {

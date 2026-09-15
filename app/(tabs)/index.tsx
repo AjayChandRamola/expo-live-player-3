@@ -9,8 +9,10 @@ import { Screen } from "../../components/ui/Screen";
 import { StateView } from "../../components/ui/StateView";
 import { IconButton } from "../../components/ui/IconButton";
 import { getColors, tokens } from "../../constants/tokens";
+import { LiveNowBanner } from "../../components/Live/LiveNowBanner";
 import { usePlayQueue } from "../../contexts/PlayQueueContext";
 import { useHomeContent } from "../../hooks/useHomeContent";
+import { useLiveStatus } from "../../hooks/useLiveStatus";
 import { toVideoMetadata } from "../../services/videoMetadataAdapter";
 import type { Video } from "../../types/domain";
 import type { VideoMetadata } from "../../types/video";
@@ -22,6 +24,7 @@ export default function HomeScreen() {
 
   const { setQueue } = usePlayQueue();
   const { status, data, error, retry } = useHomeContent();
+  const liveStatus = useLiveStatus({ enabled: true });
 
   const latestMetadata = useMemo(
     () => (data?.latest ?? []).map(toVideoMetadata),
@@ -65,6 +68,14 @@ export default function HomeScreen() {
           />
         </View>
       </View>
+
+      {liveStatus.data ? (
+        <LiveNowBanner
+          status={liveStatus.data}
+          onPress={() => router.push("/live")}
+          testID="home-live-banner"
+        />
+      ) : null}
 
       <StateView status={status} error={error} onRetry={retry} testID="home-state" />
 
