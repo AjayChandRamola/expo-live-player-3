@@ -23,6 +23,24 @@ export const COMMENT_CONFIG = {
 };
 
 /**
+ * Sanitize comment text without truncating to MAX_LENGTH.
+ * - Remove control characters (preserving \t \n \r so whitespace
+ *   normalization below can collapse them, instead of silently deleting them)
+ * - Strip <script>...</script> blocks entirely (tag + content), then any
+ *   remaining HTML tags
+ * - Normalize whitespace
+ */
+function sanitizeCommentTextUnbounded(text: string): string {
+  return text
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "") // Remove control chars, keep \t \n \r
+    .replace(/<script[\s\S]*?<\/script>/gi, "") // Remove script tags and their content
+    .replace(/<[^>]*>/g, "") // Remove remaining HTML tags
+    .replace(/[<>\"'`]/g, "") // Remove dangerous chars
+    .replace(/\s+/g, " ") // Normalize whitespace
+    .trim();
+}
+
+/**
  * Sanitize comment text
  * - Remove control characters
  * - Strip HTML/script tags
@@ -32,13 +50,7 @@ export const COMMENT_CONFIG = {
 export function sanitizeCommentText(text: unknown): string {
   if (typeof text !== "string") return "";
 
-  return text
-    .replace(/[\u0000-\u001F\u007F]/g, "") // Remove control chars
-    .replace(/<[^>]*>/g, "") // Remove HTML tags
-    .replace(/[<>\"'`]/g, "") // Remove dangerous chars
-    .replace(/\s+/g, " ") // Normalize whitespace
-    .trim()
-    .slice(0, COMMENT_CONFIG.MAX_LENGTH);
+  return sanitizeCommentTextUnbounded(text).slice(0, COMMENT_CONFIG.MAX_LENGTH);
 }
 
 /**
@@ -48,7 +60,7 @@ export function validateCommentText(text: string): {
   isValid: boolean;
   error?: string;
 } {
-  const sanitized = sanitizeCommentText(text);
+  const sanitized = sanitizeCommentTextUnbounded(text);
 
   if (!sanitized || sanitized.length < COMMENT_CONFIG.MIN_LENGTH) {
     return {

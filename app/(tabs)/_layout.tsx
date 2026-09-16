@@ -1,58 +1,69 @@
+// app/(tabs)/_layout.tsx
 import { Tabs } from "expo-router";
 import React from "react";
+import { useColorScheme } from "react-native";
 
 import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { Colors } from "@/constants/theme";
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import { getColors, tokens } from "@/constants/tokens";
 
-// ⭐ Import your Shorts icons
 import ShortsActive from "@/assets/icons/shorts-active.svg";
 import ShortsInactive from "@/assets/icons/shorts-inactive.svg";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const scheme = useColorScheme() === "dark" ? "dark" : "light";
+  const colors = getColors(scheme);
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarButton: HapticTab,
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textMuted,
+        tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
       }}
     >
-      {/* HOME */}
       <Tabs.Screen
         name="index"
         options={{
           title: "Home",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="house.fill" color={color} />
+            <IconSymbol size={tokens.iconSize.lg} name="house.fill" color={color} />
           ),
         }}
       />
-
-      {/* SHORTS — NEW FIXED TAB */}
+      <Tabs.Screen
+        name="live"
+        options={{
+          title: "Live",
+          tabBarIcon: ({ color }) => (
+            <IconSymbol
+              size={tokens.iconSize.lg}
+              name="dot.radiowaves.left.and.right"
+              color={color}
+            />
+          ),
+        }}
+      />
       <Tabs.Screen
         name="shorts"
         options={{
           title: "Shorts",
           tabBarIcon: ({ focused }) =>
             focused ? (
-              <ShortsActive width={28} height={28} />
+              <ShortsActive width={tokens.iconSize.lg} height={tokens.iconSize.lg} />
             ) : (
-              <ShortsInactive width={28} height={28} />
+              <ShortsInactive width={tokens.iconSize.lg} height={tokens.iconSize.lg} />
             ),
         }}
       />
-
-      {/* EXPLORE */}
       <Tabs.Screen
-        name="explore"
+        name="saved"
         options={{
-          title: "Explore",
+          title: "Saved",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="paperplane.fill" color={color} />
+            <IconSymbol size={tokens.iconSize.lg} name="bookmark.fill" color={color} />
           ),
         }}
       />
