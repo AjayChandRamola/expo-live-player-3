@@ -2,7 +2,7 @@
 // Characterization tests for the existing VideoPlayer.
 // These lock in current behavior so stabilization cannot change it.
 import React from "react";
-import { render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 
 // VideoProgressBar (a VideoPlayer child) uses react-native-gesture-handler,
 // whose native `install()` call is unavailable under Jest. Use the library's
@@ -111,5 +111,110 @@ describe("VideoPlayer", () => {
     expect(() =>
       render(<VideoPlayer sourceUrl="https://example.test/stream.m3u8" videoId="v2" />),
     ).not.toThrow();
+  });
+});
+
+// Parity rows from docs/player/10-migration-and-swap.md section 3.
+// These lock the OLD player's visible behaviour so the NEW player can be
+// checked against it in Increment 4. Do not weaken a row to make it pass;
+// if a row does not hold today, record the actual behaviour in the report.
+describe("VideoPlayer parity characterization (old player)", () => {
+  const baseProps = {
+    sourceUrl: MP4,
+    videoId: "v1",
+    videoTitle: "Gayatri Yagya",
+    videoUrl: MP4,
+    channelId: "c1",
+  };
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("C3: mounts one VideoView with native controls and native fullscreen disabled", () => {
+    render(<VideoPlayer {...baseProps} />);
+    const views = screen.getAllByTestId("expo-video-view");
+    expect(views).toHaveLength(1);
+    expect(views[0].props.nativeControls).toBe(false);
+    expect(views[0].props.allowsFullscreen).toBe(false);
+  });
+
+  it("C4: calls play() on mount when autoplay is default (true)", () => {
+    const { useVideoPlayer } = jest.requireMock("expo-video") as {
+      useVideoPlayer: jest.Mock;
+    };
+    render(<VideoPlayer {...baseProps} />);
+    const player = useVideoPlayer.mock.results[0]?.value as { play: jest.Mock };
+    expect(player.play).toHaveBeenCalled();
+  });
+
+  it("C4: does not call play() on mount when autoplay is false", () => {
+    const { useVideoPlayer } = jest.requireMock("expo-video") as {
+      useVideoPlayer: jest.Mock;
+    };
+    render(<VideoPlayer {...baseProps} autoplay={false} />);
+    const player = useVideoPlayer.mock.results[0]?.value as { play: jest.Mock };
+    expect(player.play).not.toHaveBeenCalled();
+  });
+
+  it("C5/C6: next and previous buttons call their handlers when enabled", () => {
+    const onNext = jest.fn();
+    const onPrev = jest.fn();
+    render(
+      <VideoPlayer
+        {...baseProps}
+        hasNextVideo
+        hasPreviousVideo
+        onNavigateToNext={onNext}
+        onNavigateToPrevious={onPrev}
+      />,
+    );
+    fireEvent.press(screen.getByLabelText(/next video/i));
+    fireEvent.press(screen.getByLabelText(/previous video/i));
+    expect(onNext).toHaveBeenCalledTimes(1);
+    expect(onPrev).toHaveBeenCalledTimes(1);
+  });
+
+  it("C5: next and previous buttons are disabled when no neighbour exists", () => {
+    const onNext = jest.fn();
+    render(
+      <VideoPlayer
+        {...baseProps}
+        hasNextVideo={false}
+        hasPreviousVideo={false}
+        onNavigateToNext={onNext}
+      />,
+    );
+    fireEvent.press(screen.getByLabelText(/next video/i));
+    expect(onNext).not.toHaveBeenCalled();
+  });
+
+  it("C7: minimize button calls onToggleMinimize", () => {
+    const onToggleMinimize = jest.fn();
+    render(<VideoPlayer {...baseProps} onToggleMinimize={onToggleMinimize} />);
+    fireEvent.press(screen.getByLabelText(/minimize/i));
+    expect(onToggleMinimize).toHaveBeenCalledTimes(1);
+  });
+
+  it("C9: fullscreen button toggles and reports onFullscreenChange(true)", async () => {
+    const onFullscreenChange = jest.fn();
+    render(<VideoPlayer {...baseProps} onFullscreenChange={onFullscreenChange} />);
+    // Initial notification with false happens on mount.
+    expect(onFullscreenChange).toHaveBeenLastCalledWith(false);
+    fireEvent.press(screen.getByLabelText(/fullscreen/i));
+    await waitFor(() => expect(onFullscreenChange).toHaveBeenLastCalledWith(true));
+  });
+
+  it("C14: dislike, download and clip buttons are hidden by feature flags", () => {
+    render(<VideoPlayer {...baseProps} />);
+    expect(screen.queryByLabelText(/dislike/i)).toBeNull();
+    expect(screen.queryByLabelText(/download/i)).toBeNull();
+    expect(screen.queryByLabelText(/clip/i)).toBeNull();
+  });
+
+  it("C10/C11: progress bar and action bar are absent when videoId is missing", () => {
+    render(<VideoPlayer sourceUrl={MP4} />);
+    expect(screen.queryByLabelText(/like/i)).toBeNull();
+    expect(screen.queryByLabelText(/share/i)).toBeNull();
   });
 });

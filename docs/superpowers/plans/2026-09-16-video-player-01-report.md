@@ -219,3 +219,60 @@ first deviation: test configuration only.
 
 - `npm test -- --testPathPattern=invariants`: 4 passed, 5 skipped.
 - `npm test`: **44 suites passed, 382 passed, 5 skipped, 387 total.**
+
+## Task 5 — Parity characterization of the old player
+
+Appended a `VideoPlayer parity characterization (old player)` block to
+`__tests__/player/VideoPlayer.render.test.tsx`, covering migration rows C3, C4,
+C5/C6, C7, C9, C10/C11, and C14. The file's existing mocks and four tests are
+untouched.
+
+**All nine new rows passed on the first run.** No label regex needed adjusting
+and neither of the plan's contingencies (a `StatusBar.setHidden` spy for C9, a
+weakened row) was required.
+
+### Parity labels (old player)
+
+These are the accessibility labels the new player must keep, read from source
+rather than guessed. Increment 4's parity suite matches against them; any change
+needs an explicit "intentional change" note.
+
+| Row | Component | Label |
+|-----|-----------|-------|
+| C5 | `NextVideoButton.tsx` | `Next video` / `Next video (unavailable)` |
+| C6 | `PreviousVideoButton.tsx` | `Previous video` / `Previous video (unavailable)` |
+| C7 | `MinimizeButton.tsx` | `Minimize video to picture-in-picture (downward caret)` / `Restore video to full screen (upward caret)`, suffixed `(unavailable)` when disabled |
+| C9 | `FullscreenButton.tsx` | `Enter fullscreen` / `Exit fullscreen` |
+| — | `PlayPauseButton.tsx` | `Play video` / `Pause video` |
+| C10 | `VideoProgressBar.tsx` | `Video progress bar. Current time: <t>`; handle `Scrubber handle. Drag to seek through video` |
+| C11 | `VideoActionBar.tsx` | `Like button. …`, `Share button. …`, `Save button. …`, `More options button. …` |
+| C14 | `VideoActionBar.tsx` | flag-hidden: `Dislike button. …`, `Download button. …`, `Clip button. …` |
+
+### Confirmed behaviours
+
+- **C3**: exactly one `VideoView`, with `nativeControls={false}` and
+  `allowsFullscreen={false}` — the player owns its chrome.
+- **C4**: `play()` is called on mount by default and not called with
+  `autoplay={false}`.
+- **C5/C6**: handlers fire when a neighbour exists and are suppressed by
+  `disabled` when it does not.
+- **C9**: `onFullscreenChange(false)` fires on mount, then `(true)` after press.
+- **C10/C11**: with no `videoId`, neither progress bar nor action bar mounts.
+
+### Observation for later increments: leaked timers in the old player
+
+The run emits many `Cannot log after tests are done` warnings, all traced to
+`components/VideoPlayer/usePlayPauseController.ts:67` reached from timeouts at
+lines 206 and 241. The controller leaves timers running after unmount, and they
+fire after the test completes. This is the same root cause as the
+`A worker process has failed to exit gracefully` message seen in Task 1, and it
+is a concrete instance of the cleanup failures in CLAUDE.md §7 and
+`docs/player/08-reliability-and-performance.md`. Not fixed here — this increment
+changes no production code — but the new engine must clear its timers on
+teardown, and Increment 1 should assert it.
+
+### Verification
+
+- `npm test -- --testPathPattern=VideoPlayer.render`: **13 passed** (4 existing
+  + 9 new).
+- `npm test`: **44 suites passed, 391 passed, 5 skipped, 396 total.**
