@@ -19,7 +19,7 @@ describe("orientation adapter (web)", () => {
   });
 
   it("subscribe uses matchMedia for portrait changes", () => {
-    const listeners: Array<(e: { matches: boolean }) => void> = [];
+    const listeners: ((e: { matches: boolean }) => void)[] = [];
     const mql = {
       matches: true,
       addEventListener: jest.fn((_: string, l: (e: { matches: boolean }) => void) => listeners.push(l)),
