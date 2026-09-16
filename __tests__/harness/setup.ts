@@ -38,5 +38,23 @@ jest.mock("expo-haptics", () => ({
 
 jest.mock("react-native-reanimated", () => {
   const Reanimated = jest.requireActual("react-native-reanimated/mock");
-  return Reanimated;
+  // The shipped mock's useSharedValue returns a fresh object on every call
+  // instead of persisting one across re-renders (it isn't backed by a ref),
+  // unlike real Reanimated. Any hook that reads a shared value's .value
+  // after a re-render triggered from inside a withTiming/withSpring callback
+  // (a common pattern: mutate the shared value, then setState) would see a
+  // reset value instead of the one just assigned. Wrap it with a real
+  // React.useRef so identity survives re-renders, matching production.
+  const React = require("react");
+  return {
+    ...Reanimated,
+    useSharedValue: (initial: unknown) => {
+      const ref = React.useRef<unknown>(null);
+      if (ref.current === null) ref.current = Reanimated.useSharedValue(initial);
+      return ref.current;
+    },
+  };
 });
+
+// react-native-gesture-handler needs its Jest setup for GestureDetector and fireGestureHandler.
+require("react-native-gesture-handler/jestSetup");
