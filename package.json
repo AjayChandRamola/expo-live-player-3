@@ -93,6 +93,10 @@
     "testMatch": [
       "**/__tests__/**/*.test.[jt]s?(x)"
     ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/.worktrees/"
+    ],
     "setupFilesAfterEnv": [
       "@testing-library/react-native/build/matchers/extend-expect"
     ],
