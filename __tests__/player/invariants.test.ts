@@ -175,6 +175,10 @@ describe("player architecture invariants", () => {
     const budgets: Record<string, number> = {
       "components/VideoPlayer/Player.tsx": 250,
       "components/VideoPlayer/engine/playbackReducer.ts": 300,
+      // Subscription wiring, timer/retry state machine and command
+      // validation for one native player. Exempted per the index plan's
+      // Global Constraints §12, decided during the Increment 1 report review.
+      "components/VideoPlayer/engine/PlaybackEngine.ts": 550,
     };
     const offenders = [...newFolderFiles, join(PLAYER_DIR, "Player.tsx")]
       .filter((f) => {

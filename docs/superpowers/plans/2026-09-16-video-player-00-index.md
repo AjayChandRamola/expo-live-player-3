@@ -23,7 +23,7 @@
 9. **Logging.** Player code logs only through `engine/devLog.ts` (dev-only). Never log a URL query string, a header, or personal data.
 10. **Commit messages** follow `type(scope): summary`, include a `Verified:` line with the command and its observed output, and end with `Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>`.
 11. **Reports.** Each increment ends with `docs/superpowers/plans/2026-09-16-video-player-0<n>-report.md` using the template in `docs/player/08-reliability-and-performance.md` §6, stating exactly what was run, what passed, what was not run.
-12. **File budgets** (R9): every new file under 200 lines except `Player.tsx` (≤ 250) and `playbackReducer.ts` (≤ 300). Split before exceeding.
+12. **File budgets** (R9): every new file under 200 lines except `Player.tsx` (≤ 250), `playbackReducer.ts` (≤ 300), and `PlaybackEngine.ts` (≤ 550 — subscription wiring, timer/retry state machine and command validation for one native player; Increment 1 built it at 501 lines per Task 9's verbatim spec and Tasks 10-11 extend it directly. Exempted after the fact, decided during Increment 1's report review, rather than split code Increments 2-3 already depend on by shape). Split before exceeding a file's budget.
 
 ## Plans
 
