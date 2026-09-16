@@ -19,7 +19,7 @@ type RuleId =
   | "R7"
   | "R9"
   | "OLD_ROOT_FROZEN";
-const ACTIVE_RULES: readonly RuleId[] = ["R1", "R2", "R3", "R6", "R7", "OLD_ROOT_FROZEN"];
+const ACTIVE_RULES: readonly RuleId[] = ["R1", "R2", "R3", "R4", "R6", "R7", "OLD_ROOT_FROZEN"];
 
 /** New-code folders. Rules R3-R6 and R9 apply here until Increment 7 widens them. */
 const NEW_FOLDERS = ["engine", "platform", "gestures", "ui", "hooks"].map((f) =>
