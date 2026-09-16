@@ -53,6 +53,9 @@ export const SWIPE_ACTIVATION_PX = 12;
 export const SWIPE_INDICATOR_HIDE_MS = 800;
 
 // ---- Transient UI ----
+export const CONTROL_PRESS_SCALE = 0.9;
+export const CONTROL_ICON_RATIO = 0.6;
+export const PRESS_SPRING = { damping: 15, stiffness: 300 } as const;
 export const BUFFERING_INDICATOR_DELAY_MS = 300;
 export const END_SCREEN_COUNTDOWN_MS = 5_000;
 export const TOAST_MS = 1_500;
