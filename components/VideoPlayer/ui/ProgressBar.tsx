@@ -1,7 +1,7 @@
 // components/VideoPlayer/ui/ProgressBar.tsx
 // Spec: docs/player/06-ui-and-gestures-spec.md §5.3 and §4.3
 import React, { memo, useCallback, useMemo, useRef, useState } from "react";
-import { type LayoutChangeEvent, Pressable, StyleSheet, Text, View, type AccessibilityActionEvent } from "react-native";
+import { type LayoutChangeEvent, Pressable, Text, View, type AccessibilityActionEvent } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import type { ChapterItem } from "../../../types/domain";
@@ -9,7 +9,7 @@ import { CHAPTER_MARKER_HIT_SLOP, PRESS_SPRING, SKIP_MS } from "../constants";
 import { clamp } from "../engine/pure/clamp";
 import { formatTime } from "../engine/pure/formatTime";
 import type { HapticsAdapter } from "../platform/types";
-import { playerTokens } from "../tokens";
+import { styles } from "./ProgressBar.styles";
 
 export interface ProgressBarProps {
   readonly positionMs: number;
@@ -61,15 +61,9 @@ export const ProgressBar = memo(function ProgressBar({
   const thumbScale = useSharedValue(1);
   const thumbStyle = useAnimatedStyle(() => ({ transform: [{ scale: thumbScale.value }] }));
 
-  // Pixel width is only used for x/width ratio math inside gesture callbacks
-  // below (percent() renders by duration fraction, not pixel width), so it
-  // is tracked in a ref rather than state: no render depends on it, and
-  // keeping the Tap/Pan gesture objects' identity stable across layout
-  // passes avoids re-registering a gesture handler on every layout. That
-  // churn is also what the RNGH jest test utilities can't follow:
-  // getByGestureTestId keeps returning the handler captured at first
-  // render, so a value only reachable via a changing closure would be
-  // stuck at its initial value for every fired test event.
+  // Width is a ref, not state: no render depends on it, and RNGH's jest
+  // test registry keeps returning the first-rendered gesture handler, so a
+  // gesture rebuilt from changing state would read a stale closure value.
   const widthRef = useRef(0);
   const durationRef = useRef(durationMs);
   durationRef.current = durationMs;
@@ -198,39 +192,4 @@ export const ProgressBar = memo(function ProgressBar({
       </GestureDetector>
     </View>
   );
-});
-
-const styles = StyleSheet.create({
-  container: { width: "100%" },
-  hitArea: { height: playerTokens.size.minTouchTarget, justifyContent: "center" },
-  track: { height: playerTokens.size.progressBar, backgroundColor: playerTokens.color.track, borderRadius: playerTokens.size.progressBar / 2 },
-  fill: { position: "absolute", left: 0, top: 0, bottom: 0, borderRadius: playerTokens.size.progressBar / 2 },
-  buffered: { backgroundColor: playerTokens.color.buffered },
-  played: { backgroundColor: playerTokens.color.accent },
-  chapterTick: {
-    position: "absolute",
-    top: -playerTokens.space.xs / 2,
-    width: 2,
-    height: playerTokens.size.progressBar + playerTokens.space.xs,
-    backgroundColor: playerTokens.color.chapterTick,
-  },
-  thumb: {
-    position: "absolute",
-    top: (playerTokens.size.progressBar - playerTokens.size.thumb) / 2,
-    marginLeft: -playerTokens.size.thumb / 2,
-    width: playerTokens.size.thumb,
-    height: playerTokens.size.thumb,
-    borderRadius: playerTokens.size.thumb / 2,
-    backgroundColor: playerTokens.color.accent,
-  },
-  preview: {
-    position: "absolute",
-    bottom: playerTokens.size.minTouchTarget,
-    marginLeft: -playerTokens.space.xl,
-    paddingHorizontal: playerTokens.space.sm,
-    paddingVertical: playerTokens.space.xs,
-    borderRadius: playerTokens.radius.sm,
-    backgroundColor: playerTokens.color.surface,
-  },
-  previewText: { color: playerTokens.color.onVideo, fontVariant: ["tabular-nums"] },
 });

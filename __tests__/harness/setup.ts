@@ -49,8 +49,8 @@ jest.mock("react-native-reanimated", () => {
   return {
     ...Reanimated,
     useSharedValue: (initial: unknown) => {
-      const ref = React.useRef<unknown>(null);
-      if (ref.current === null) ref.current = Reanimated.useSharedValue(initial);
+      const created = Reanimated.useSharedValue(initial);
+      const ref = React.useRef<unknown>(created);
       return ref.current;
     },
   };
