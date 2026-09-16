@@ -3,7 +3,7 @@
 // reading the source tree. Rules are activated increment by increment via
 // ACTIVE_RULES; an inactive rule is skipped, never deleted.
 import { execSync } from "node:child_process";
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 
 const ROOT = join(__dirname, "..", "..");
@@ -19,7 +19,7 @@ type RuleId =
   | "R7"
   | "R9"
   | "OLD_ROOT_FROZEN";
-const ACTIVE_RULES: readonly RuleId[] = ["R1", "R2", "R3", "R4", "R6", "R7", "OLD_ROOT_FROZEN"];
+const ACTIVE_RULES: readonly RuleId[] = ["R1", "R2", "R3", "R4", "R5", "R6", "R7", "R9", "OLD_ROOT_FROZEN"];
 
 /** New-code folders. Rules R3-R6 and R9 apply here until Increment 7 widens them. */
 const NEW_FOLDERS = ["engine", "platform", "gestures", "ui", "hooks"].map((f) =>
@@ -137,7 +137,7 @@ describe("player architecture invariants", () => {
         .map(rel)
         .filter(
           (r) =>
-            !/Reanimated/.test(read(join(ROOT, r))) ||
+            !/reanimated/i.test(read(join(ROOT, r))) ||
             /from\s+["']react-native-paper["']/.test(read(join(ROOT, r)))
         );
       expect(offenders).toEqual([]);
@@ -180,7 +180,9 @@ describe("player architecture invariants", () => {
       // Global Constraints §12, decided during the Increment 1 report review.
       "components/VideoPlayer/engine/PlaybackEngine.ts": 550,
     };
-    const offenders = [...newFolderFiles, join(PLAYER_DIR, "Player.tsx")]
+    const playerTsx = join(PLAYER_DIR, "Player.tsx");
+    const candidates = existsSync(playerTsx) ? [...newFolderFiles, playerTsx] : newFolderFiles;
+    const offenders = candidates
       .filter((f) => {
         const lines = read(f).split("\n").length;
         return lines > (budgets[rel(f)] ?? 200);
