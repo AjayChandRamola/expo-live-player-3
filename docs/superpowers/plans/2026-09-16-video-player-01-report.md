@@ -133,3 +133,39 @@ the failure. Aligning those 20 packages is out of scope here and should be its
 own change, since `expo-video` and `expo-screen-orientation` are on the list and
 moving them would disturb the very playback behaviour the next tasks are about
 to characterize.
+
+## Task 3 — Web Jest project
+
+- Created `jest.web.config.js`, `__tests__/harness/setup.web.ts`, and
+  `__tests__/player/platform/smoke.web.test.ts`; added `"test:web": "jest -c
+  jest.web.config.js"` to `package.json` scripts.
+- Run before the config existed, `npm run test:web` failed with a config-not-found
+  error, as the plan predicted.
+- Neither fallback in the plan's Step 4 was needed: the `jest-expo/web` preset
+  resolved, and `jest-environment-jsdom` was already present, so **no extra dev
+  dependency was added**.
+
+### Step 5 — default project had to be taught to skip web tests
+
+The plan flagged this as a possibility and it happened. The default project's
+`testMatch` (`**/__tests__/**/*.test.[jt]s?(x)`) matched `smoke.web.test.ts`,
+ran it under the native preset, and failed both assertions because `Platform.OS`
+resolved to `"ios"`. Applied the plan's prescribed fix, merged into the
+`testPathIgnorePatterns` array introduced in Task 1:
+
+```json
+"testPathIgnorePatterns": [
+  "/node_modules/",
+  "/.worktrees/",
+  "\.web\.test\.tsx?$"
+],
+```
+
+### Verification
+
+- `npm run test:web`: **2 passed** (`PASS Web`, confirming the web platform
+  resolution is active).
+- `npm test -- --testPathPattern=smoke.web`: 0 matches — the default project no
+  longer sees web tests.
+- `npm test`: **43 suites passed, 378 tests passed** — unchanged, so adding the
+  web project cost the native suite nothing.
