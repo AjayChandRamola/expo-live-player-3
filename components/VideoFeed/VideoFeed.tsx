@@ -38,6 +38,11 @@ interface VideoFeedProps {
   onVideosLoaded?: (videos: VideoMetadata[]) => void;
   searchQuery?: string; // Optional search query
   isSearchMode?: boolean; // Whether in search mode
+  testID?: string;
+  /** Externally controlled refresh state, e.g. from a screen's own data hook. */
+  refreshing?: boolean;
+  /** Called in addition to the feed's own refresh when the list is pulled. */
+  onRefresh?: () => void;
 }
 
 const VideoFeed: React.FC<VideoFeedProps> = ({
@@ -48,6 +53,9 @@ const VideoFeed: React.FC<VideoFeedProps> = ({
   onVideosLoaded,
   searchQuery = "",
   isSearchMode = false,
+  testID,
+  refreshing: externalRefreshing,
+  onRefresh: externalOnRefresh,
 }) => {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
@@ -244,6 +252,11 @@ const VideoFeed: React.FC<VideoFeedProps> = ({
       setRefreshing(false);
     }
   }, [pageSize]);
+
+  const handlePullToRefresh = useCallback(() => {
+    externalOnRefresh?.();
+    void handleRefresh();
+  }, [externalOnRefresh, handleRefresh]);
 
   /**
    * Retry after error
@@ -452,6 +465,7 @@ const VideoFeed: React.FC<VideoFeedProps> = ({
   return (
     <View style={styles.container}>
       <FlatList
+        testID={testID}
         data={videos}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
@@ -470,8 +484,8 @@ const VideoFeed: React.FC<VideoFeedProps> = ({
         ListFooterComponent={renderFooter}
         refreshControl={
           <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
+            refreshing={externalRefreshing ?? refreshing}
+            onRefresh={handlePullToRefresh}
             tintColor="#0ea5ff"
             colors={["#0ea5ff"]}
             title="Pull to refresh"

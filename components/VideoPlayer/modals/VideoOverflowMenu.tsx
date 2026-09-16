@@ -24,6 +24,7 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Logger from "../../../utils/Logger";
+import { PLAYER_FEATURE_FLAGS } from "../../../constants/config";
 
 interface VideoOverflowMenuProps {
   /**
@@ -204,13 +205,19 @@ export function VideoOverflowMenu({
       icon: "close-circle-outline",
       onPress: handleNotInterested,
     },
-    {
-      id: "report",
-      label: "Report",
-      icon: "flag-outline",
-      onPress: handleReport,
-      danger: true,
-    },
+    // Report has UI but no verified moderation/backend implementation.
+    // Gated behind PLAYER_FEATURE_FLAGS.report; code retained for later use.
+    ...(PLAYER_FEATURE_FLAGS.report
+      ? [
+          {
+            id: "report",
+            label: "Report",
+            icon: "flag-outline",
+            onPress: handleReport,
+            danger: true,
+          } as MenuItem,
+        ]
+      : []),
     {
       id: "dont-recommend-channel",
       label: "Don't recommend channel",
@@ -224,12 +231,18 @@ export function VideoOverflowMenu({
       icon: "help-circle-outline",
       onPress: handleHelp,
     },
-    {
-      id: "quality",
-      label: "Quality",
-      icon: "high-definition-box",
-      onPress: handleQuality,
-    },
+    // Quality selection has UI but no verified implementation. Gated behind
+    // PLAYER_FEATURE_FLAGS.qualitySelection; code retained for later use.
+    ...(PLAYER_FEATURE_FLAGS.qualitySelection
+      ? [
+          {
+            id: "quality",
+            label: "Quality",
+            icon: "high-definition-box",
+            onPress: handleQuality,
+          } as MenuItem,
+        ]
+      : []),
     {
       id: "captions",
       label: "Captions",

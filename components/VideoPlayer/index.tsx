@@ -32,6 +32,7 @@ import {
   Modal,
   SafeAreaView,
 } from "react-native";
+import type { StyleProp, ViewStyle } from "react-native";
 import { VideoView, useVideoPlayer } from "expo-video";
 import * as ScreenOrientation from "expo-screen-orientation";
 import PlayPauseButton from "./PlayPauseButton";
@@ -77,6 +78,13 @@ type Props = {
   chapters?: any;
   hideControlsTimeout?: number;
   theme?: string;
+  // Video metadata — consumed by the action bar, share sheet, and overflow menu.
+  // videoId must be a non-empty string for the action bar and progress bar to render
+  // (see the guards at the `!isFullscreen && !isMinimized && videoId` conditions below).
+  videoId?: string;
+  videoTitle?: string;
+  videoUrl?: string;
+  channelId?: string;
 };
 
 const DEFAULT_BUTTON_SIZE = 80;
@@ -167,6 +175,10 @@ const VideoPlayer: React.FC<Props> = ({
   const [showSave, setShowSave] = useState(false);
   const [showMore, setShowMore] = useState(false);
 
+  // Track playback status. Declared before useVideoProgress because that hook
+  // reads isPlaying in its options object.
+  const [isPlaying, setIsPlaying] = useState(autoplay);
+
   // Video progress tracking
   const { position, duration, buffered, isLoaded: progressLoaded, seek } = useVideoProgress({
     player,
@@ -203,8 +215,6 @@ const VideoPlayer: React.FC<Props> = ({
     return () => subscription?.remove();
   }, []);
 
-  // Track playback status
-  const [isPlaying, setIsPlaying] = useState(autoplay);
   const [isLoaded, setIsLoaded] = useState(false);
   
   useEffect(() => {
@@ -247,7 +257,7 @@ const VideoPlayer: React.FC<Props> = ({
           // Heuristic to determine left vs right (simple threshold)
           const isLeft =
             typeof locX === "number"
-              ? locX < (evt.currentTarget as any)?.clientWidth / 2 ?? 200
+              ? locX < ((evt.currentTarget as any)?.clientWidth ?? 400) / 2
               : typeof pageX === "number"
               ? pageX < 200
               : false;
@@ -694,7 +704,7 @@ const VideoPlayer: React.FC<Props> = ({
 
   // Video style for proper centering and filling
   // In non-fullscreen, use contain to ensure full video visibility with letterboxing
-  const videoStyle = isFullscreen
+  const videoStyle: StyleProp<ViewStyle> = isFullscreen
     ? {
         position: "absolute" as const,
         top: 0,
@@ -746,7 +756,7 @@ const VideoPlayer: React.FC<Props> = ({
   }, [resizeMode, isFullscreen, isPortrait, dimensions.width, dimensions.height, VIDEO_ASPECT_RATIO]);
 
   // Touchable style for proper fullscreen coverage
-  const touchableStyle = isFullscreen
+  const touchableStyle: StyleProp<ViewStyle> = isFullscreen
     ? {
         position: "absolute" as const,
         top: 0,
@@ -771,7 +781,7 @@ const VideoPlayer: React.FC<Props> = ({
         <VideoView
           style={videoStyle}
           player={player}
-          contentFit={resizeMode === "contain" ? "contain" : resizeMode === "cover" ? "cover" : "fill"}
+          contentFit={resizeMode === "contain" ? "contain" : "fill"}
           nativeControls={false}
           allowsFullscreen={false}
         />
@@ -1007,7 +1017,7 @@ const VideoPlayer: React.FC<Props> = ({
             onClose={() => setShowMore(false)}
             onNotInterested={notInterested}
             onReport={() => report("inappropriate")}
-            onDontRecommendChannel={(channelId) => dontRecommendChannel(channelId || "")}
+            onDontRecommendChannel={() => dontRecommendChannel(channelId ?? "")}
           />
         </>
       )}

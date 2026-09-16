@@ -23,9 +23,11 @@ const AutoplayNotification: React.FC<AutoplayNotificationProps> = ({
 }) => {
   const fadeAnim = useRef(new RN.Animated.Value(0)).current;
   const translateYAnim = useRef(new RN.Animated.Value(-20)).current;
+  const hasAnimatedOutRef = React.useRef(true);
 
   useEffect(() => {
     if (visible) {
+      hasAnimatedOutRef.current = false;
       // Fade in and slide down
       RN.Animated.parallel([
         RN.Animated.timing(fadeAnim, {
@@ -66,12 +68,13 @@ const AutoplayNotification: React.FC<AutoplayNotificationProps> = ({
       return () => clearTimeout(timer);
     } else {
       // Reset animations when not visible
+      hasAnimatedOutRef.current = true;
       fadeAnim.setValue(0);
       translateYAnim.setValue(-20);
     }
   }, [visible, fadeAnim, translateYAnim, onDismiss]);
 
-  if (!visible && fadeAnim.__getValue() === 0) {
+  if (!visible && hasAnimatedOutRef.current) {
     return null;
   }
 

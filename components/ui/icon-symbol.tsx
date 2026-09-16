@@ -18,6 +18,10 @@ const MAPPING = {
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
+  'dot.radiowaves.left.and.right': 'live-tv',
+  'bookmark.fill': 'bookmark',
+  'magnifyingglass': 'search',
+  'gearshape.fill': 'settings',
 } as IconMapping;
 
 /**

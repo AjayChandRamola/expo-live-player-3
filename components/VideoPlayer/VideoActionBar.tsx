@@ -20,6 +20,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { VideoActionButton } from "./VideoActionButton";
 import Logger from "../../utils/Logger";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { PLAYER_FEATURE_FLAGS } from "../../constants/config";
 
 export interface VideoActionBarProps {
   /**
@@ -194,13 +195,15 @@ export const VideoActionBar = memo(function VideoActionBar({
         />
 
         {/* Dislike Button */}
-        <VideoActionButton
-          icon={isDisliked ? "thumb-down" : "thumb-down-outline"}
-          label="Dislike"
-          active={isDisliked}
-          onPress={handleDislike}
-          accessibilityLabel={`Dislike button. ${isDisliked ? "Currently disliked" : "Press to dislike this video"}`}
-        />
+        {PLAYER_FEATURE_FLAGS.dislike && (
+          <VideoActionButton
+            icon={isDisliked ? "thumb-down" : "thumb-down-outline"}
+            label="Dislike"
+            active={isDisliked}
+            onPress={handleDislike}
+            accessibilityLabel={`Dislike button. ${isDisliked ? "Currently disliked" : "Press to dislike this video"}`}
+          />
+        )}
 
         {/* Share Button */}
         <VideoActionButton
@@ -212,22 +215,26 @@ export const VideoActionBar = memo(function VideoActionBar({
         />
 
         {/* Download Button */}
-        <VideoActionButton
-          icon="download"
-          label="Download"
-          active={false}
-          onPress={handleDownload}
-          accessibilityLabel="Download button. Press to download this video"
-        />
+        {PLAYER_FEATURE_FLAGS.download && (
+          <VideoActionButton
+            icon="download"
+            label="Download"
+            active={false}
+            onPress={handleDownload}
+            accessibilityLabel="Download button. Press to download this video"
+          />
+        )}
 
         {/* Clip Button */}
-        <VideoActionButton
-          icon="scissors-cutting"
-          label="Clip"
-          active={false}
-          onPress={handleClip}
-          accessibilityLabel="Clip button. Press to create a clip from this video"
-        />
+        {PLAYER_FEATURE_FLAGS.clipEditor && (
+          <VideoActionButton
+            icon="scissors-cutting"
+            label="Clip"
+            active={false}
+            onPress={handleClip}
+            accessibilityLabel="Clip button. Press to create a clip from this video"
+          />
+        )}
 
         {/* Save Button */}
         <VideoActionButton
