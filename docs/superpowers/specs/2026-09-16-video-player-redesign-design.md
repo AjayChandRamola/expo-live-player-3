@@ -189,7 +189,7 @@ Removed from today's surface: `buttonSize`, `hideControlsTimeout`, `theme` (no c
 3. Forward `snapshot` to `onStateChange` in an effect; forward position to `onPositionChange` on the schedule in 3.3.
 4. Choose layout mode: `"inline" | "fullscreen" | "minimized"`.
 5. Render `<PlayerSurface>` with `<ControlsOverlay>` (or `<MiniPlayer>` when minimized) and the transient views (`BufferingIndicator`, `ErrorCard`, `EndScreen`, `Toast`, `CaptionsView`, `SettingsSheet`).
-6. Nothing else. No styles beyond layout mode selection, no logging beyond one dev-only line per state change, no timers of its own.
+6. Nothing else. No styles beyond layout mode selection, no logging beyond one dev-only line per state change, no timers of its own. Root-only glue hooks (`useLayoutMode`, `useFullscreen`, `useSurfaceLayout`, `useToast`, `useOnStateChange`, `useEndScreenCountdown`, `useKeyboardShortcuts`) live in `components/VideoPlayer/hooks/`, each under 80 lines, importing only from `engine/`, `platform/` and `constants.ts`.
 
 ---
 
