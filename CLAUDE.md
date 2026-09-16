@@ -1,5 +1,9 @@
 # CLAUDE.md — Yagna App Engineering Rules
 
+## 0. Implementation Instructions
+- Use the plugin Superpowers - Inline implementation approach.
+- Do NOT use subagent-driven development Superpowers plugin approach. Do NOT spawn subagents for implementation, review, or testing. Execute all tasks directly in the current Claude Code session to minimize cost and maintain context.
+
 ## 1. Project Context
 - Product: Yagna/Yagya spiritual video and community mobile app.
 - Location: `D:\expo-live-player`
@@ -20,6 +24,20 @@ Before making changes, inspect:
 5. Git status and recent changes.
 
 Never guess existing behavior, APIs, dependencies, or scripts.
+
+### 2.1 Supplementary Docs (`docs/`)
+This CLAUDE.md is the condensed, always-loaded ruleset. `docs/` holds the detailed, topic-specific versions of the same rules plus reference material — consult the relevant file **on a requirement basis** (i.e. when a task touches that topic), rather than loading all of them for every task. If a `docs/` file and this CLAUDE.md conflict, treat it as a signal to flag the conflict to the user rather than silently picking one.
+
+- `docs/engineering/coding.md` — full coding & architecture rules (KISS/DRY/SOLID/YAGNU, reuse, structure). Consult for any code change.
+- `docs/engineering/FunctionalRules.md` — functional/requirements engineering rules (user outcomes, acceptance criteria, states). Consult when implementing or scoping a feature.
+- `docs/engineering/performance.md` — performance rules (measurement, optimization, buffering, resource bounds). Consult for anything performance-sensitive, especially playback.
+- `docs/engineering/react-native.md` — React Native/Expo platform rules (lists, lifecycle, safe areas, versions). Consult for RN/Expo-specific implementation.
+- `docs/engineering/security.md` — security rules (secrets, TLS, trust boundaries, storage). Consult for anything touching auth, network, storage, or user input.
+- `docs/engineering/testing.md` — testing & QA rules (coverage, planning, regression). Consult when writing or scoping tests.
+- `docs/engineering/video-player.md` — VideoPlayer-specific protected-module rules. Consult before **any** change touching `components/VideoPlayer/`, `contexts/VideoPlayerContext.tsx`, or `components/Shorts/`.
+- `docs/reference/Project-structure-of-expo-live-player.md` — actual file/folder map of the codebase. Consult before navigating or adding files, to place new code correctly.
+- `docs/reference/expo-live-player-architecture-issue.md` — known architecture issues/findings intended to inform redesign decisions. Consult during HLD/LLD or refactoring work.
+- `docs/reference/prompt.md` — the original Fable HLD prompt/brief for the Yagna mobile app. Consult for product intent and scope during HLD-stage work.
 
 ## 3. AI Development Workflow
 - **Fable:** Product understanding, HLD, information architecture, MVP scope.
