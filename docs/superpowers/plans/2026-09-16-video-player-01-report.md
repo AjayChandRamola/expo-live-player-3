@@ -90,3 +90,46 @@ Note the plan's "Verified Starting State" predicted 24 route-typing errors would
 remain including 6 in tests; the actual figure is 21 with none in `__tests__`.
 The baseline for later increments is therefore **21**, and no increment may
 raise it.
+
+## Task 2 — Shared Jest setup and native-module mocks
+
+- Created `__tests__/harness/setup.ts` mocking `expo-screen-orientation`,
+  `expo-brightness`, `expo-haptics`, and `react-native-reanimated`, and wired it
+  into `jest.setupFilesAfterEnv` after the RNTL matchers.
+- Created `__tests__/harness/setup.test.ts`, which asserts each mock is present
+  and returns the documented shape. Run before the setup file existed it failed
+  with `Cannot find module 'expo-brightness'`, as the plan predicted.
+- `npx expo install expo-brightness` installed **`~14.0.8`** per ADR 0010.
+  Nothing imports it yet; Increment 3 (platform adapters) will.
+
+### Verification
+
+- `npm test -- --testPathPattern=harness/setup`: 3 passed.
+- `npm test`: **43 suites passed, 378 tests passed** — the 42/375 baseline plus
+  this one new suite of three tests. No existing suite regressed, so the
+  Reanimated mock stays in `setup.ts` and no per-file fallback was needed.
+  `VideoPlayer.render.test.tsx` keeps its own file-level
+  `jest.mock("expo-screen-orientation")`, which overrides the setup mock without
+  conflict, exactly as the plan anticipated.
+
+### `npx expo-doctor`
+
+Not clean, but not clean before this increment either:
+
+```
+✖ Check that packages match versions required by installed Expo SDK
+1 check failed, indicating possible issues with the project.
+```
+
+The check names 20 packages whose installed versions differ from the SDK 54
+recommendations (`expo-asset`, `expo-audio`, `expo-constants`,
+`expo-file-system`, `expo-font`, `expo-haptics`, `expo-image`,
+`expo-keep-awake`, `expo-linear-gradient`, `expo-linking`, `expo-router`,
+`expo-screen-orientation`, `expo-splash-screen`, `expo-status-bar`,
+`expo-symbols`, `expo-system-ui`, `expo-video`, `expo-web-browser`, and two
+others). **`expo-brightness` is not among them** — `npx expo install` picked the
+SDK-correct version. This increment therefore neither introduced nor resolved
+the failure. Aligning those 20 packages is out of scope here and should be its
+own change, since `expo-video` and `expo-screen-orientation` are on the list and
+moving them would disturb the very playback behaviour the next tasks are about
+to characterize.
