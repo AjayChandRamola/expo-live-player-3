@@ -169,3 +169,53 @@ resolved to `"ios"`. Applied the plan's prescribed fix, merged into the
   longer sees web tests.
 - `npm test`: **43 suites passed, 378 tests passed** — unchanged, so adding the
   web project cost the native suite nothing.
+
+## Task 4 — Architecture invariant tests
+
+Created `__tests__/player/invariants.test.ts`, which reads the source tree and
+enforces the dependency rules from `docs/player/03-architecture.md` §2. Rules are
+gated by an `ACTIVE_RULES` array so later increments activate them rather than
+add new files.
+
+```
+Tests: 5 skipped, 4 passed, 9 total
+
+√ R1: only VideoPlaybackContainer imports components/VideoPlayer
+√ R2: player imports no app contexts/services/hooks/app at runtime
+√ R7: Shorts and useShortsPlayer are unchanged from main
+√ old components/VideoPlayer/index.tsx is byte-identical to main
+○ R3 R4 R5 R6 R9  (inactive until components/VideoPlayer/{engine,platform,gestures,ui,hooks} exist)
+```
+
+**R1 passing on the first run is a useful finding**: `VideoPlaybackContainer` is
+already the only importer of the player outside the player's own folder, so the
+Increment 6 swap has exactly one call site to change, as the migration doc
+assumed.
+
+### Second deviation: `jest.modulePathIgnorePatterns`
+
+This run surfaced a warning that predates the increment:
+
+```
+jest-haste-map: duplicate manual mock found: svgMock
+    * <rootDir>\__mocks__\svgMock.js
+    * <rootDir>\.worktrees\mvp-implementation\__mocks__\svgMock.js
+```
+
+`testPathIgnorePatterns` stops Jest *running* worktree tests but does not stop
+haste-map *scanning* the worktree, so the manual mock was ambiguous on every
+run. Added, alongside the Task 1 change:
+
+```json
+"modulePathIgnorePatterns": [
+  "/\.worktrees/"
+],
+```
+
+The warning is gone and the full suite is unaffected. Same justification as the
+first deviation: test configuration only.
+
+### Verification
+
+- `npm test -- --testPathPattern=invariants`: 4 passed, 5 skipped.
+- `npm test`: **44 suites passed, 382 passed, 5 skipped, 387 total.**

@@ -95,6 +95,9 @@
     "testMatch": [
       "**/__tests__/**/*.test.[jt]s?(x)"
     ],
+    "modulePathIgnorePatterns": [
+      "/\\.worktrees/"
+    ],
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/.worktrees/",
