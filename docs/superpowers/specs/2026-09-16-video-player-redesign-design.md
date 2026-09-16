@@ -253,6 +253,7 @@ export interface PlaybackSnapshot {
 
 export type EngineEvent =
   | { type: "sourceSet"; isLive: boolean }
+  | { type: "sourceLoaded"; durationMs: number; isLive: boolean }   // from expo-video sourceLoad (duration) and native isLive
   | { type: "statusChange"; status: "idle" | "loading" | "readyToPlay" | "error"; error?: PlaybackError }
   | { type: "playingChange"; isPlaying: boolean }
   | { type: "timeUpdate"; positionMs: number; bufferedMs: number; durationMs: number; liveOffsetMs: number | null }
