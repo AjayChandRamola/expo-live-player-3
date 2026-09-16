@@ -136,13 +136,15 @@ export function playbackReducer(prev: PlaybackSnapshot, event: EngineEvent): Pla
       return prev.status === "idle" && prev.error === null ? prev : { ...prev, status: "idle", error: null };
     case "statusChange":
       return onStatusChange(prev, event);
-    case "sourceLoaded":
-      return prev.status === "idle"
-        ? ignored(prev, event)
-        : withChanges(prev, {
-            durationMs: event.durationMs > 0 ? Math.round(event.durationMs) : prev.durationMs,
-            isLive: prev.isLive || event.isLive,
-          });
+    case "sourceLoaded": {
+      if (prev.status === "idle") return ignored(prev, event);
+      const durationMs = event.durationMs > 0 ? Math.round(event.durationMs) : prev.durationMs;
+      return withChanges(prev, {
+        durationMs,
+        isLive: prev.isLive || event.isLive,
+        positionMs: clampPosition(prev.positionMs, durationMs),
+      });
+    }
     case "playingChange":
       return onPlayingChange(prev, event);
     case "timeUpdate":
