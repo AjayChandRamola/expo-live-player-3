@@ -137,9 +137,15 @@ export class PlaybackEngine {
   notifyAppState(state: AppStateName): void {
     if (this.disposed) return;
     if (state === "background" || state === "inactive") {
+      // Dispatch appBackground first, while status still reflects the real
+      // pre-pause state: pause() below can emit a synchronous playingChange
+      // (the fake always does; some native bridges can too), which would
+      // otherwise move status to "paused" before the reducer records
+      // isPlayingBeforeBackground, losing it.
       const s = this.snapshot.status;
-      if (s === "playing" || s === "buffering") this.safeCall(() => this.player.pause(), "pauseOnBackground");
+      const wasPlaying = s === "playing" || s === "buffering";
       this.dispatch({ type: "appBackground" });
+      if (wasPlaying) this.safeCall(() => this.player.pause(), "pauseOnBackground");
       return;
     }
     if (state === "active") this.dispatch({ type: "appForeground" });

@@ -351,3 +351,188 @@ describe("PlaybackEngine E6/E11: errors and retry", () => {
     expect(fake.replaceCalls).toHaveLength(1);
   });
 });
+
+describe("PlaybackEngine E7: commands", () => {
+  function ready(autoplay = false) {
+    const ctx = setup({ autoplay });
+    ctx.engine.setSource(MP4);
+    becomeReady(ctx.fake, 100);
+    tick(ctx.fake, 10, 30);
+    return ctx;
+  }
+
+  it("play/pause/togglePlay call the player and follow status", () => {
+    const { fake, engine, last } = ready();
+    engine.commands.play();
+    expect(last().status).toBe("playing");
+    engine.commands.togglePlay();
+    expect(last().status).toBe("paused");
+    engine.commands.togglePlay();
+    expect(last().status).toBe("playing");
+    engine.commands.pause();
+    expect(fake.pause).toHaveBeenCalled();
+  });
+
+  it("togglePlay in ended calls replay", () => {
+    const { fake, engine, last } = ready(true);
+    fake.emit("playToEnd", undefined);
+    expect(last().status).toBe("ended");
+    engine.commands.togglePlay();
+    expect(fake.replay).toHaveBeenCalledTimes(1);
+    expect(last().status).toBe("playing");
+  });
+
+  it("seekTo clamps to [0, duration] and publishes the position immediately", () => {
+    const { fake, engine, last } = ready();
+    engine.commands.seekTo(250_000);
+    expect(fake.currentTime).toBe(100);
+    expect(last().positionMs).toBe(100_000);
+    engine.commands.seekTo(-5);
+    expect(fake.currentTime).toBe(0);
+    expect(last().positionMs).toBe(0);
+  });
+
+  it("seekBy adds to the current position", () => {
+    const { fake, engine } = ready();
+    engine.commands.seekBy(-10_000);
+    expect(fake.currentTime).toBe(0);
+    engine.commands.seekBy(45_000);
+    expect(fake.currentTime).toBe(45);
+  });
+
+  it("S15: ten rapid seeks apply the last one without error", () => {
+    // ready() uses autoplay=false by default, so status is "ready" here
+    // (never played); seeking does not change status, only position.
+    const { fake, engine, last } = ready();
+    for (let i = 1; i <= 10; i += 1) engine.commands.seekTo(i * 1_000);
+    expect(fake.currentTime).toBe(10);
+    expect(last().status).toBe("ready");
+    expect(last().positionMs).toBe(10_000);
+  });
+
+  it("S16: twenty toggles end with parity", () => {
+    const { engine, last } = ready();
+    for (let i = 0; i < 20; i += 1) engine.commands.togglePlay();
+    expect(last().status).toBe("paused");
+    engine.commands.togglePlay();
+    expect(last().status).toBe("playing");
+  });
+
+  it("seek is disabled for live without a window", () => {
+    const { fake, engine } = setup();
+    engine.setSource(LIVE);
+    fake.isLive = true;
+    becomeReady(fake, 0);
+    fake.currentTime = 5;
+    engine.commands.seekTo(1_000);
+    expect(fake.currentTime).toBe(5);
+  });
+
+  it("setRate accepts only listed rates", () => {
+    const { fake, engine } = ready();
+    engine.commands.setRate(1.5);
+    expect(fake.playbackRate).toBe(1.5);
+    engine.commands.setRate(3);
+    expect(fake.playbackRate).toBe(1.5);
+  });
+
+  it("setMuted and setVolume update the player; volume > 0 unmutes", () => {
+    const { fake, engine } = ready();
+    engine.commands.setMuted(true);
+    expect(fake.muted).toBe(true);
+    engine.commands.setVolume(0.5);
+    expect(fake.volume).toBe(0.5);
+    expect(fake.muted).toBe(false);
+    engine.commands.setVolume(4);
+    expect(fake.volume).toBe(1);
+  });
+
+  it("selectSubtitle sets the matching native track or null", () => {
+    const { fake, engine } = ready();
+    fake.availableSubtitleTracks = [{ id: "hi", language: "hi", label: "Hindi" }];
+    engine.commands.selectSubtitle({ id: "hi", language: "hi", label: "Hindi" });
+    expect(fake.subtitleTrack?.id).toBe("hi");
+    engine.commands.selectSubtitle(null);
+    expect(fake.subtitleTrack).toBeNull();
+  });
+
+  it("selectQuality is a no-op (read-only videoTrack in expo-video 3.0.11)", () => {
+    const { fake, engine } = ready();
+    engine.commands.selectQuality({ id: "x", width: 1, height: 1, bitrate: null, label: "1p" });
+    expect(fake.videoTrack).toBeNull();
+  });
+
+  it("goToLive seeks to the edge only when live", () => {
+    const vod = ready();
+    vod.engine.commands.goToLive();
+    expect(vod.fake.currentTime).toBe(10);
+
+    const { fake, engine } = setup();
+    engine.setSource(LIVE);
+    fake.isLive = true;
+    becomeReady(fake, 60);
+    fake.currentTime = 20;
+    engine.commands.goToLive();
+    expect(fake.targetOffsetFromLive).toBe(0);
+    expect(fake.currentTime).toBe(60);
+  });
+
+  it("commands are no-ops in loading and error (except retry)", () => {
+    const { fake, engine } = setup();
+    engine.setSource(MP4);
+    engine.commands.play();
+    engine.commands.seekTo(5);
+    expect(fake.play).not.toHaveBeenCalled();
+    expect(fake.currentTime).toBe(0);
+  });
+});
+
+describe("PlaybackEngine E8: app state and PiP", () => {
+  it("background pauses and records; foreground does not resume", () => {
+    const { fake, engine, last } = setup();
+    engine.setSource(MP4);
+    becomeReady(fake);
+    expect(last().status).toBe("playing");
+    engine.notifyAppState("background");
+    expect(fake.pause).toHaveBeenCalledTimes(1);
+    expect(last().status).toBe("paused");
+    expect(last().isPlayingBeforeBackground).toBe(true);
+    engine.notifyAppState("active");
+    expect(fake.play).toHaveBeenCalledTimes(1); // only the autoplay call
+    expect(last().status).toBe("paused");
+  });
+
+  it("background while paused does not call pause again", () => {
+    const { fake, engine } = setup({ autoplay: false });
+    engine.setSource(MP4);
+    becomeReady(fake);
+    engine.notifyAppState("inactive");
+    expect(fake.pause).not.toHaveBeenCalled();
+  });
+
+  it("notifyPictureInPicture toggles the flag", () => {
+    const { fake, engine, last } = setup();
+    engine.setSource(MP4);
+    becomeReady(fake);
+    engine.notifyPictureInPicture(true);
+    expect(last().isPictureInPicture).toBe(true);
+    engine.notifyPictureInPicture(false);
+    expect(last().isPictureInPicture).toBe(false);
+  });
+
+  it("track events map to qualities and subtitles", () => {
+    const { fake, engine, last } = setup();
+    engine.setSource(MP4);
+    becomeReady(fake);
+    const track = { id: "v1", size: { width: 1280, height: 720 }, mimeType: "video/mp4", isSupported: true, bitrate: 2_000_000, frameRate: 30 };
+    fake.availableVideoTracks = [track];
+    fake.emit("videoTrackChange", { videoTrack: track, oldVideoTrack: null });
+    expect(last().qualities).toEqual([{ id: "v1", width: 1280, height: 720, bitrate: 2_000_000, label: "720p" }]);
+    expect(last().activeQuality?.label).toBe("720p");
+
+    fake.emit("availableSubtitleTracksChange", { availableSubtitleTracks: [{ id: "hi", language: "hi", label: "Hindi" }] });
+    expect(last().subtitleTracks).toEqual([{ id: "hi", language: "hi", label: "Hindi" }]);
+    fake.emit("subtitleTrackChange", { subtitleTrack: { id: "hi", language: "hi", label: "Hindi" } });
+    expect(last().activeSubtitle?.id).toBe("hi");
+  });
+});
