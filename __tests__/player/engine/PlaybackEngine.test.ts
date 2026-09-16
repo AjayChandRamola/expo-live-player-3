@@ -185,3 +185,169 @@ describe("PlaybackEngine E3: setSource and first ready", () => {
     expect(engine.lastKnownPositionMs).toBe(12_345);
   });
 });
+
+describe("PlaybackEngine E4: stall detection", () => {
+  it("enters buffering after STALL_TIMEOUT_MS without timeUpdate, recovers on progress", () => {
+    const { fake, engine, last } = setup();
+    engine.setSource(MP4);
+    becomeReady(fake);
+    tick(fake, 1);
+    jest.advanceTimersByTime(STALL_TIMEOUT_MS - 1);
+    expect(last().status).toBe("playing");
+    jest.advanceTimersByTime(1);
+    expect(last().status).toBe("buffering");
+    tick(fake, 1.1, 5); // buffered ahead > MIN_BUFFER_AHEAD_MS
+    expect(last().status).toBe("playing");
+  });
+
+  it("clears the stall timer when paused", () => {
+    const { fake, engine, last } = setup();
+    engine.setSource(MP4);
+    becomeReady(fake);
+    tick(fake, 1);
+    fake.pause();
+    expect(last().status).toBe("paused");
+    jest.advanceTimersByTime(STALL_TIMEOUT_MS * 2);
+    expect(last().status).toBe("paused");
+  });
+
+  it("treats playing=false while native status is loading as buffering (ExoPlayer rebuffer)", () => {
+    const { fake, engine, last } = setup();
+    engine.setSource(MP4);
+    becomeReady(fake);
+    fake.status = "loading";
+    fake.playing = false;
+    fake.emit("playingChange", { isPlaying: false, oldIsPlaying: true });
+    expect(last().status).toBe("buffering");
+  });
+});
+
+describe("PlaybackEngine E6/E11: errors and retry", () => {
+  const nativeNetworkError = (fake: FakeVideoPlayer) => {
+    fake.status = "error";
+    fake.emit("statusChange", { status: "error", oldStatus: "readyToPlay", error: { message: "Network timed out" } });
+  };
+
+  it("schedules retries at 1s, 2s, 4s then stops in error with retryAttempt 3", () => {
+    const { fake, engine, last } = setup();
+    engine.setSource(MP4);
+    becomeReady(fake);
+    tick(fake, 20);
+
+    nativeNetworkError(fake);
+    expect(last().status).toBe("error");
+    expect(last().error?.code).toBe("network");
+    expect(last().retryAttempt).toBe(1);
+    expect(fake.replaceCalls).toHaveLength(1);
+
+    jest.advanceTimersByTime(RETRY_DELAYS_MS[0]);
+    expect(fake.replaceCalls).toHaveLength(2);
+    expect(last().status).toBe("loading");
+    nativeNetworkError(fake);
+    expect(last().retryAttempt).toBe(2);
+
+    jest.advanceTimersByTime(RETRY_DELAYS_MS[1]);
+    expect(fake.replaceCalls).toHaveLength(3);
+    nativeNetworkError(fake);
+    expect(last().retryAttempt).toBe(3);
+
+    jest.advanceTimersByTime(RETRY_DELAYS_MS[2]);
+    expect(fake.replaceCalls).toHaveLength(4);
+    nativeNetworkError(fake);
+    expect(last().retryAttempt).toBe(3);
+    jest.advanceTimersByTime(60_000);
+    expect(fake.replaceCalls).toHaveLength(4);
+    expect(last().status).toBe("error");
+  });
+
+  it("retry resumes at the last known position and playing state", () => {
+    const { fake, engine, last } = setup();
+    engine.setSource(MP4);
+    becomeReady(fake);
+    tick(fake, 20);
+    nativeNetworkError(fake);
+    jest.advanceTimersByTime(RETRY_DELAYS_MS[0]);
+    fake.currentTime = 0;
+    becomeReady(fake);
+    expect(fake.currentTime).toBe(20);
+    expect(last().status).toBe("playing");
+  });
+
+  it("does not retry unsupported errors", () => {
+    const { fake, engine, last } = setup();
+    engine.setSource(MP4);
+    fake.emit("statusChange", { status: "error", error: { message: "Unsupported codec" } });
+    expect(last().error?.retryable).toBe(false);
+    expect(last().retryAttempt).toBe(0);
+    jest.advanceTimersByTime(60_000);
+    expect(fake.replaceCalls).toHaveLength(1);
+  });
+
+  it("setSource during a pending retry cancels it", () => {
+    // The fake never becomes ready for HLS on its own; without becomeReady()
+    // the new source's own load timer would fire at LOAD_TIMEOUT_MS and start
+    // an unrelated retry cascade, masking the assertion this test makes.
+    const { fake, engine } = setup();
+    engine.setSource(MP4);
+    becomeReady(fake);
+    nativeNetworkError(fake);
+    engine.setSource(HLS);
+    becomeReady(fake);
+    jest.advanceTimersByTime(60_000);
+    expect(fake.replaceCalls).toHaveLength(2); // MP4 once, HLS once, no retry replace
+  });
+
+  it("manual retry after exhaustion resets the attempt counter and plays", () => {
+    const { fake, engine, last } = setup();
+    engine.setSource(MP4);
+    becomeReady(fake);
+    tick(fake, 10);
+    for (let i = 0; i < 4; i += 1) {
+      nativeNetworkError(fake);
+      jest.advanceTimersByTime(RETRY_DELAYS_MS[Math.min(i, 2)]);
+    }
+    expect(last().retryAttempt).toBe(3);
+    engine.commands.retry();
+    expect(last().status).toBe("loading");
+    expect(last().retryAttempt).toBe(0);
+    fake.currentTime = 0;
+    becomeReady(fake);
+    expect(fake.currentTime).toBe(10);
+    expect(last().status).toBe("playing");
+  });
+
+  it("E11: load timeout produces a retryable network error", () => {
+    const { engine, last } = setup();
+    engine.setSource(MP4);
+    jest.advanceTimersByTime(LOAD_TIMEOUT_MS);
+    expect(last().status).toBe("error");
+    expect(last().error?.code).toBe("network");
+    expect(last().error?.cause).toBe("load timeout");
+    expect(last().retryAttempt).toBe(1);
+  });
+
+  it("readyToPlay before the timeout cancels it", () => {
+    // Advancing time without simulated timeUpdate ticks would trigger the
+    // independent stall timer (STALL_TIMEOUT_MS), not the load timer this
+    // test targets. Tick periodically so only the load timer's absence is
+    // under test.
+    const { fake, engine, last } = setup();
+    engine.setSource(MP4);
+    becomeReady(fake);
+    const totalMs = LOAD_TIMEOUT_MS * 2;
+    const stepMs = STALL_TIMEOUT_MS - 500;
+    for (let elapsedMs = 0; elapsedMs < totalMs; elapsedMs += stepMs) {
+      tick(fake, elapsedMs / 1000);
+      jest.advanceTimersByTime(stepMs);
+    }
+    expect(last().status).toBe("playing");
+  });
+
+  it("retry command is a no-op outside error", () => {
+    const { fake, engine } = setup();
+    engine.setSource(MP4);
+    becomeReady(fake);
+    engine.commands.retry();
+    expect(fake.replaceCalls).toHaveLength(1);
+  });
+});
