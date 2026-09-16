@@ -23,7 +23,7 @@ import { useEndScreenCountdown } from "../../../components/VideoPlayer/hooks/use
 import { useOnStateChange } from "../../../components/VideoPlayer/hooks/useOnStateChange";
 import { useKeyboardShortcuts } from "../../../components/VideoPlayer/hooks/useKeyboardShortcuts";
 import { END_SCREEN_COUNTDOWN_MS, KEYBOARD_SEEK_LARGE_MS, KEYBOARD_SEEK_SMALL_MS } from "../../../components/VideoPlayer/constants";
-import type { PlaybackCommands, PlaybackStatus } from "../../../components/VideoPlayer/engine/types";
+import type { PlaybackCommands, PlaybackSnapshot, PlaybackStatus } from "../../../components/VideoPlayer/engine/types";
 import { playingSnapshot } from "../fakes/snapshots";
 
 const commands = (): PlaybackCommands => ({
@@ -78,7 +78,8 @@ describe("useOnStateChange", () => {
     const first = jest.fn();
     const second = jest.fn();
     const s1 = playingSnapshot();
-    const { rerender } = renderHook(({ s, cb }) => useOnStateChange(s, cb), { initialProps: { s: s1, cb: first } });
+    type Props = { s: PlaybackSnapshot; cb: (snapshot: PlaybackSnapshot) => void };
+    const { rerender } = renderHook(({ s, cb }: Props) => useOnStateChange(s, cb), { initialProps: { s: s1, cb: first } });
     expect(first).toHaveBeenCalledWith(s1);
     const s2 = playingSnapshot({ positionMs: 2 });
     rerender({ s: s2, cb: second });
