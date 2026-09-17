@@ -1,5 +1,5 @@
 /**
- * components/VideoPlayer/modals/VideoSaveSheet.tsx
+ * components/Video/actions/sheets/SaveSheet.tsx
  *
  * Save toggle backed by SavedContext, the app's single source of truth for
  * saved videos. Playlists are out of MVP scope (HLD: Later).
@@ -140,7 +140,3 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
 });
-
-// Compatibility alias so the old root (components/VideoPlayer/index.tsx)
-// keeps compiling until Increment 5 Task 10 repoints its imports.
-export { SaveSheet as VideoSaveSheet };

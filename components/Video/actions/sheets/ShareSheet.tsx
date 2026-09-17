@@ -1,6 +1,6 @@
 /**
- * components/VideoPlayer/modals/VideoShareSheet.tsx
- * 
+ * components/Video/actions/sheets/ShareSheet.tsx
+ *
  * Native share sheet for sharing videos
  * - Uses platform native share dialog
  * - Includes video title, URL, and app name
@@ -102,8 +102,4 @@ export function ShareSheet({
   // This component doesn't render anything, it just triggers the share sheet
   return null;
 }
-
-// Compatibility alias so the old root (components/VideoPlayer/index.tsx)
-// keeps compiling until Increment 5 Task 10 repoints its imports.
-export { ShareSheet as VideoShareSheet };
 

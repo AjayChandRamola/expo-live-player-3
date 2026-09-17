@@ -101,7 +101,8 @@
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/.worktrees/",
-      "\\.web\\.test\\.tsx?$"
+      "\\.web\\.test\\.tsx?$",
+      "/docs/history/"
     ],
     "setupFilesAfterEnv": [
       "@testing-library/react-native/build/matchers/extend-expect",
