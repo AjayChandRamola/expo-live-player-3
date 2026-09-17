@@ -5,13 +5,23 @@
  * See HLD section F.5 and M.
  */
 export const PLAYER_FEATURE_FLAGS = {
+  // Stays false: F33 tests are green, but manual matrix row M23 was not run
+  // (no device available in Increment 6). See docs/superpowers/plans/
+  // 2026-09-16-video-player-07-report.md.
   download: false,
+  // Stays false: F21 tests are green, but manual matrix row M19 was not run
+  // (no device available in Increment 6).
   pictureInPicture: false,
+  // Never enabled in this effort: expo-video 3.0.11's videoTrack is read-only.
   qualitySelection: false,
-  clipEditor: false,
+  // F34 tests green; metadata-only, no manual matrix dependency.
+  clipEditor: true,
+  // Human decision pending (ADR 0009); stays false.
   thanks: false,
-  report: false,
-  dislike: false,
+  // F35 tests green; no manual matrix dependency.
+  report: true,
+  // F30 tests green; no manual matrix dependency.
+  dislike: true,
 } as const;
 
 /** Timing, in milliseconds. */

@@ -1,32 +1,35 @@
-1. Project structure of expo-live-player/
+1. Project structure of expo-live-player/ (redesigned 2026-09-16; see docs/player/03-architecture.md §3 for the full annotated tree)
 
+```
 components/VideoPlayer/
+├── index.tsx                  Re-export: `export { Player as default } from "./Player";`
+├── Player.tsx                 Composition root
+├── types.ts                   VideoPlayerProps, VideoPlayerSource (public API)
+├── constants.ts                Every timing, threshold, list, message
+├── tokens.ts                  Colours, sizes, z-indexes
+├── engine/                    Event-driven playback engine and pure reducer (wraps one expo-video player)
+├── platform/                  Native/web adapters: fullscreen, orientation, systemChrome, keyboard, pictureInPicture, brightness, haptics
+├── gestures/                  useControlsVisibility, useTapGestures, useSwipeGestures
+├── hooks/                     Root-only glue hooks (useLayoutMode, useFullscreen, useToast, useEndScreenCountdown, useKeyboardShortcuts, ...)
+└── ui/                        PlayerSurface, ControlsOverlay, ProgressBar, CaptionsView, BufferingIndicator, ErrorCard, EndScreen, MiniPlayer, controls/
 
-index.tsx — Player component
+components/Video/
+├── VideoPlaybackContainer.tsx  The only module outside tests permitted to import components/VideoPlayer; maps domain Video/PlayableSource onto VideoPlayerProps, prefers a downloaded file, renders VideoActionBar
+├── VideoMeta.tsx
+└── actions/                   VideoActionBar, VideoActionButton, useVideoActions, VideoActionsProvider, sheets/ (Save, Share, Download, Clip, Report, Thanks, OverflowMenu)
 
-hooks/useVideoPlayer.ts — Playback hook
+services/videoActions/         VideoActionsRepository + localVideoActionsRepository, downloadService, PaymentProvider + unavailablePaymentProvider
 
-VideoView.tsx — Video rendering
-
-Controls.tsx — Controls
-
-VideoActionBar.tsx — Action bar
-
-VideoProgressBar.tsx — Progress
-
-modals/ — Save, Share, Download, Clip, More
-
-types.ts, tokens.ts, styles.ts, utils.ts
-
-contexts/VideoPlayerContext.tsx
+contexts/PlayQueueContext.tsx  Queue and autoplay session state (playback state itself stays internal to the player)
 
 app/video/[id].tsx
 
 components/VideoFeed/
 
-components/Shorts/
+components/Shorts/            Unchanged from the redesign (R7); a separate playback experience
 
 services/ and hooks/
+```
 
 2. Actual VideoPlayer capabilities
 Playback engine
@@ -53,7 +56,7 @@ Playback library
 
 	
 
-expo-av
+expo-video ~3.0.11
 
 
 
@@ -344,7 +347,7 @@ Current source-resolution behavior
 
 The video screen can resolve a video from:
 
-Existing VideoPlayerContext selection.
+A queue selection via PlayQueueContext.
 
 A validated direct ?url= parameter.
 
@@ -408,10 +411,10 @@ Mobile App Screen
 Video Playback Container
        │
        ▼
-Existing VideoPlayer
+VideoPlayer (redesigned 2026-09-16)
        │
        ▼
-expo-av / native playback
+expo-video / native playback
 
 The screen should provide the player with a resolved media source and relevant metadata. The player should own playback mechanics.
 

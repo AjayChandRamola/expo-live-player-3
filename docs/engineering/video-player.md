@@ -52,3 +52,18 @@
 - Treat Download, PiP, quality selection, Like, and Save as requiring production verification where applicable.
 - Verify real media behavior, not just rendered UI.
 - Any refactor requires reason, impact, tests, and rollback consideration.
+
+## 7. Architecture (2026-09-16 redesign)
+
+See `docs/player/03-architecture.md` for the full design. Dependency rules, enforced by `__tests__/player/invariants.test.ts`:
+
+- **R1**: only `VideoPlaybackContainer` imports `components/VideoPlayer`.
+- **R2**: the player imports no app contexts/services/hooks/app code at runtime.
+- **R3**: only the engine and `PlayerSurface` import `expo-video`.
+- **R4**: no `Platform.OS` / `Platform.select` outside `platform/`.
+- **R5**: no legacy `Animated` or `react-native-paper` in the player.
+- **R6**: no `any` in the player.
+- **R7**: Shorts and `useShortsPlayer` are unchanged from main.
+- **R9**: file line budgets, and `setInterval`/`setTimeout` confined to `engine`, `gestures`, `hooks`, and `ui/BufferingIndicator.tsx` (with `setInterval` itself limited to `hooks/useEndScreenCountdown.ts`).
+
+Only the container imports the player. The player never imports contexts, services, hooks or app code. Only the engine and PlayerSurface import expo-video. No `Platform.OS` above `platform/`. Reanimated is the only animation library. No `any`. Shorts unchanged. File budgets apply.
