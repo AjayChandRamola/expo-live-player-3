@@ -1,6 +1,7 @@
 // __tests__/components/actions/VideoActionBar.test.tsx
 import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react-native";
+import type { VideoActionState } from "../../../services/videoActions/VideoActionsRepository";
 
 // VideoActionBar reads useSafeAreaInsets() for bottom padding; without a
 // provider (real or mocked) under Jest this throws before the buttons ever
@@ -21,7 +22,7 @@ jest.mock("../../../contexts/SavedContext", () => ({
 }));
 
 const mockActions = {
-  state: { videoId: "v1", liked: false, disliked: false, reported: false, notInterested: false, counts: null, updatedAt: "t" },
+  state: { videoId: "v1", liked: false, disliked: false, reported: false, notInterested: false, counts: null, updatedAt: "t" } as VideoActionState,
   status: "ready" as const,
   error: null as { code: string; message: string } | null,
   pending: new Set<string>(),

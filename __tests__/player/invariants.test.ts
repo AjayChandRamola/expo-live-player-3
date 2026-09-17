@@ -19,7 +19,16 @@ type RuleId =
   | "R7"
   | "R9"
   | "OLD_ROOT_FROZEN";
-const ACTIVE_RULES: readonly RuleId[] = ["R1", "R2", "R3", "R4", "R5", "R6", "R7", "R9", "OLD_ROOT_FROZEN"];
+const ACTIVE_RULES: readonly RuleId[] = ["R1", "R2", "R3", "R4", "R5", "R6", "R7", "R9"];
+
+/**
+ * Increment 5 Task 10 made the one permitted edit to the old root (repointing
+ * it at the relocated action modules). From that point on the old root is
+ * frozen against this commit instead of main. Set to the sha of that commit
+ * in a follow-up one-line commit once it exists; OLD_ROOT_FROZEN stays out of
+ * ACTIVE_RULES until then so this file's own commit doesn't fail its own check.
+ */
+const OLD_ROOT_BASELINE = "PENDING";
 
 /** New-code folders. Rules R3-R6 and R9 apply here until Increment 7 widens them. */
 const NEW_FOLDERS = ["engine", "platform", "gestures", "ui", "hooks"].map((f) =>
@@ -192,11 +201,11 @@ describe("player architecture invariants", () => {
   });
 
   (active("OLD_ROOT_FROZEN") ? it : it.skip)(
-    "old components/VideoPlayer/index.tsx is byte-identical to main",
+    "old components/VideoPlayer/index.tsx is byte-identical to the pinned baseline",
     () => {
-      let fromMain = "";
+      let fromBaseline = "";
       try {
-        fromMain = execSync("git show main:components/VideoPlayer/index.tsx", {
+        fromBaseline = execSync(`git show ${OLD_ROOT_BASELINE}:components/VideoPlayer/index.tsx`, {
           cwd: ROOT,
         }).toString();
       } catch {
@@ -204,7 +213,7 @@ describe("player architecture invariants", () => {
         return;
       }
       const current = read(join(PLAYER_DIR, "index.tsx"));
-      expect(current.replace(/\r\n/g, "\n")).toBe(fromMain.replace(/\r\n/g, "\n"));
+      expect(current.replace(/\r\n/g, "\n")).toBe(fromBaseline.replace(/\r\n/g, "\n"));
     }
   );
 });

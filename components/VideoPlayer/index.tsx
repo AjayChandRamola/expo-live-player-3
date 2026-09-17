@@ -45,14 +45,8 @@ import FullscreenButton from "./FullscreenButton";
 import { usePlayPauseController } from "./usePlayPauseController";
 import { VideoProgressBar } from "./VideoProgressBar";
 import { VideoTimeOverlay } from "./VideoTimeOverlay";
-import { VideoActionBar } from "./VideoActionBar";
-import { VideoShareSheet } from "./modals/VideoShareSheet";
-import { VideoDownloadModal } from "./modals/VideoDownloadModal";
-import { VideoClipEditor } from "./modals/VideoClipEditor";
-import { VideoSaveSheet } from "./modals/VideoSaveSheet";
-import { VideoOverflowMenu } from "./modals/VideoOverflowMenu";
+import { VideoActionBar } from "../Video/actions/VideoActionBar";
 import { useVideoProgress } from "../../hooks/useVideoProgress";
-import { useVideoActions } from "../../hooks/useVideoActions";
 import Logger from "../../utils/Logger";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -168,13 +162,6 @@ const VideoPlayer: React.FC<Props> = ({
     }
   }, [player, autoplay]);
 
-  // Modal states
-  const [showShare, setShowShare] = useState(false);
-  const [showDownload, setShowDownload] = useState(false);
-  const [showClip, setShowClip] = useState(false);
-  const [showSave, setShowSave] = useState(false);
-  const [showMore, setShowMore] = useState(false);
-
   // Track playback status. Declared before useVideoProgress because that hook
   // reads isPlaying in its options object.
   const [isPlaying, setIsPlaying] = useState(autoplay);
@@ -183,26 +170,6 @@ const VideoPlayer: React.FC<Props> = ({
   const { position, duration, buffered, isLoaded: progressLoaded, seek } = useVideoProgress({
     player,
     isPlaying: isPlaying,
-  });
-
-  // Video actions (Like, Dislike, Share, etc.)
-  const {
-    isLiked,
-    isDisliked,
-    likeCount,
-    dislikeCount,
-    isSaved,
-    like,
-    dislike,
-    share: shareAction,
-    download: downloadAction,
-    clip: clipAction,
-    save: saveAction,
-    report,
-    notInterested,
-    dontRecommendChannel,
-  } = useVideoActions({
-    videoId: videoId || "unknown",
   });
 
   // Handle orientation changes and window resize
@@ -954,72 +921,13 @@ const VideoPlayer: React.FC<Props> = ({
       
       {/* Action Bar - Below video (only when not fullscreen and not minimized) */}
       {!isFullscreen && !isMinimized && videoId && (
-        <>
-          <VideoActionBar
-            videoId={videoId}
-            videoTitle={videoTitle}
-            videoUrl={videoUrl || sourceUrl}
-            channelId={channelId}
-            isLiked={isLiked}
-            isDisliked={isDisliked}
-            likeCount={likeCount}
-            dislikeCount={dislikeCount}
-            isSaved={isSaved}
-            onLike={like}
-            onDislike={dislike}
-            onShare={() => setShowShare(true)}
-            onDownload={() => setShowDownload(true)}
-            onClip={() => setShowClip(true)}
-            onSave={() => setShowSave(true)}
-            onMore={() => setShowMore(true)}
-          />
-
-          {/* Modals */}
-          <VideoShareSheet
-            videoId={videoId}
-            title={videoTitle}
-            url={videoUrl || sourceUrl}
-            visible={showShare}
-            onClose={() => setShowShare(false)}
-          />
-
-          <VideoDownloadModal
-            videoId={videoId}
-            visible={showDownload}
-            onClose={() => setShowDownload(false)}
-          />
-
-          <VideoClipEditor
-            videoId={videoId}
-            duration={duration}
-            currentPosition={position}
-            visible={showClip}
-            onClose={() => setShowClip(false)}
-            onSave={async (startTime, endTime) => {
-              await clipAction(startTime, endTime);
-              setShowClip(false);
-            }}
-          />
-
-          <VideoSaveSheet
-            videoId={videoId}
-            visible={showSave}
-            onClose={() => setShowSave(false)}
-            onSaved={(playlistIds) => {
-              saveAction(playlistIds);
-            }}
-          />
-
-          <VideoOverflowMenu
-            videoId={videoId}
-            channelId={channelId}
-            visible={showMore}
-            onClose={() => setShowMore(false)}
-            onNotInterested={notInterested}
-            onReport={() => report("inappropriate")}
-            onDontRecommendChannel={() => dontRecommendChannel(channelId ?? "")}
-          />
-        </>
+        <VideoActionBar
+          videoId={videoId}
+          videoTitle={videoTitle ?? ""}
+          videoUrl={videoUrl || sourceUrl}
+          channelId={channelId}
+          sourceKind={sourceUrl.endsWith(".m3u8") ? "hls" : "mp4"}
+        />
       )}
     </>
   );
