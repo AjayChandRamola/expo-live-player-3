@@ -7,6 +7,9 @@ export type AppErrorCode =
   | "invalid_source"
   | "unsupported_source"
   | "storage"
+  | "storage_full"
+  | "payments_unavailable"
+  | "unauthorized"
   | "validation"
   | "unknown";
 

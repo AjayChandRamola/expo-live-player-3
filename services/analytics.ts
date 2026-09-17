@@ -6,7 +6,23 @@
  */
 import Logger from "../utils/Logger";
 
-export type AnalyticsEvent = "video_start" | "video_finish" | "live_join";
+export type AnalyticsEvent =
+  | "video_start"
+  | "video_finish"
+  | "video_progress"
+  | "live_join"
+  | "action_like"
+  | "action_dislike"
+  | "action_not_interested"
+  | "action_save"
+  | "action_share"
+  | "action_failed"
+  | "download_start"
+  | "download_complete"
+  | "download_fail"
+  | "clip_create"
+  | "report_submit"
+  | "thanks_open";
 
 export function track(
   event: AnalyticsEvent,
