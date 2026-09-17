@@ -1,5 +1,5 @@
 /**
- * components/VideoPlayer/modals/VideoSaveSheet.tsx
+ * components/Video/actions/sheets/SaveSheet.tsx
  *
  * Save toggle backed by SavedContext, the app's single source of truth for
  * saved videos. Playlists are out of MVP scope (HLD: Later).
@@ -8,9 +8,9 @@
 import React, { useCallback } from "react";
 import { View, Text, Modal, StyleSheet, Pressable, Platform } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useSaved } from "../../../contexts/SavedContext";
+import { useSaved } from "../../../../contexts/SavedContext";
 
-interface VideoSaveSheetProps {
+interface SaveSheetProps {
   /**
    * Video ID
    */
@@ -33,14 +33,14 @@ interface VideoSaveSheetProps {
 }
 
 /**
- * VideoSaveSheet Component
+ * SaveSheet Component
  */
-export function VideoSaveSheet({
+export function SaveSheet({
   videoId,
   visible,
   onClose,
   onSaved,
-}: VideoSaveSheetProps) {
+}: SaveSheetProps) {
   const { isSaved, toggleSave } = useSaved();
   const saved = isSaved(videoId);
 

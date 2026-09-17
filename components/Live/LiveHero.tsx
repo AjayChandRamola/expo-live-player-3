@@ -97,10 +97,12 @@ export function LiveHero({ status, onWatchReplay, testID }: LiveHeroProps) {
           hasPrevious={false}
           isAutoplayEnabled={false}
           isMinimized={false}
+          isFullscreen={false}
           onNext={() => {}}
           onPrevious={() => {}}
           onFinished={() => {}}
           onToggleMinimize={() => {}}
+          onToggleAutoplay={() => {}}
           onFullscreenChange={() => {}}
         />
       </View>

@@ -6,6 +6,7 @@ import * as Linking from "expo-linking";
 import { useEffect } from "react";
 import "react-native-reanimated";
 
+import { VideoActionsProvider } from "@/components/Video/actions/VideoActionsProvider";
 import { PlayQueueProvider } from "@/contexts/PlayQueueContext";
 import { SavedProvider } from "@/contexts/SavedContext";
 import { SettingsProvider, useSettings } from "@/contexts/SettingsContext";
@@ -20,7 +21,9 @@ export default function RootLayout() {
   return (
     <SettingsProvider>
       <SavedProvider>
-        <RootLayoutInner />
+        <VideoActionsProvider>
+          <RootLayoutInner />
+        </VideoActionsProvider>
       </SavedProvider>
     </SettingsProvider>
   );

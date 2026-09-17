@@ -27,6 +27,8 @@ Thanks / donation
 
 Recommendation: Keep the existing UI working, but establish a clean ownership boundary in the new HLD.
 
+Resolved by the 2026-09-16 redesign: see ADR 0006 / PlayQueueContext / ADR 0011 / docs/player/03-architecture.md.
+
 Issue B — VideoPlayerContext is not a complete content repository
 
 The context manages:
@@ -54,6 +56,9 @@ Player navigation state
         │
         ▼
 Actual playback state
+
+Resolved by the 2026-09-16 redesign: see ADR 0006 / PlayQueueContext / ADR 0011 / docs/player/03-architecture.md.
+
 Issue C — Local catalog and external URL are demo behavior
 
 The current video screen contains a local catalog with sample videos, including an HLS stream and an MP4 stream.
@@ -76,6 +81,8 @@ Fable must decide whether this should remain separate from the main VideoPlayer 
 
 For MVP, do not rewrite it automatically.
 
+Resolved by the 2026-09-16 redesign: see ADR 0006 / PlayQueueContext / ADR 0011 / docs/player/03-architecture.md. Shorts remained separate (R7).
+
 Issue E — Player is already large
 
 The current VideoPlayer is composed of many files, controls, modals, hooks, and utilities.
@@ -85,6 +92,8 @@ This means our earlier goal of “compact code” should be refined:
 We want a maintainable player, not necessarily a single small file.
 
 The right target is clear responsibilities and minimal duplication.
+
+Resolved by the 2026-09-16 redesign: see ADR 0006 / PlayQueueContext / ADR 0011 / docs/player/03-architecture.md.
 
 7. Updated architecture flow
 

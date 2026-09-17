@@ -31,3 +31,19 @@ Baselines for the current player are recorded in Increment 0 before any new code
 ## Verification
 
 - Each increment's report contains the P1–P9 table with measured values or "not measured" and the reason.
+
+## Measured values (Increment 6 report, `docs/superpowers/plans/2026-09-16-video-player-07-report.md`)
+
+No physical device was available in Increment 6, so only the CI-measurable proxies have a value. Status stays "Proposed" until the human confirms the targets (open item O1).
+
+| Id | Target | Measured | Device / condition | Pass |
+|----|--------|----------|--------------------|------|
+| P1 | ≤ 2,000 ms | not measured | no device | not measured |
+| P2 | ≤ 3,000 ms | not measured | no device | not measured |
+| P3 | ≤ 100 ms | not measured | no device | not measured |
+| P4 | ≤ 4 renders/s | automated proxy passing (`__tests__/player/VideoPlayer.root.perf.test.tsx`) | CI (fake timers) | yes (proxy only; device profiler not run) |
+| P5 | ≤ 30 MB growth | not measured | no device | not measured |
+| P6 | 0 timers/listeners after unmount | passing (S20 suite) | CI | yes |
+| P7 | JS FPS ≥ 55 | not measured | no device | not measured |
+| P8 | ≥ 40% smaller bundle | not measured | no device/CI run | not measured |
+| P9 | no worse battery | not measured | no device | not measured |

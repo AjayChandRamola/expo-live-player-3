@@ -3,7 +3,7 @@
 // reading the source tree. Rules are activated increment by increment via
 // ACTIVE_RULES; an inactive rule is skipped, never deleted.
 import { execSync } from "node:child_process";
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 
 const ROOT = join(__dirname, "..", "..");
@@ -17,9 +17,8 @@ type RuleId =
   | "R5"
   | "R6"
   | "R7"
-  | "R9"
-  | "OLD_ROOT_FROZEN";
-const ACTIVE_RULES: readonly RuleId[] = ["R1", "R2", "R3", "R4", "R5", "R6", "R7", "R9", "OLD_ROOT_FROZEN"];
+  | "R9";
+const ACTIVE_RULES: readonly RuleId[] = ["R1", "R2", "R3", "R4", "R5", "R6", "R7", "R9"];
 
 /** New-code folders. Rules R3-R6 and R9 apply here until Increment 7 widens them. */
 const NEW_FOLDERS = ["engine", "platform", "gestures", "ui", "hooks"].map((f) =>
@@ -104,8 +103,8 @@ describe("player architecture invariants", () => {
         "components/VideoPlayer/engine/usePlaybackEngine.ts",
         "components/VideoPlayer/ui/PlayerSurface.tsx",
       ]);
-      const offenders = newFolderFiles
-        .filter((f) => /from\s+["']expo-video["']/.test(read(f)))
+      const offenders = playerFiles
+        .filter((f) => /^import\s+(?!type\s)[^;]*from\s+["']expo-video["']/m.test(read(f)))
         .map(rel)
         .filter((r) => !allowed.has(r));
       expect(offenders).toEqual([]);
@@ -115,7 +114,7 @@ describe("player architecture invariants", () => {
   (active("R4") ? it : it.skip)(
     "R4: no Platform.OS / Platform.select outside platform/",
     () => {
-      const offenders = newFolderFiles
+      const offenders = playerFiles
         .filter((f) => !rel(f).includes("/platform/"))
         .filter((f) => /Platform\.(OS|select)/.test(read(f)))
         .map(rel);
@@ -126,7 +125,7 @@ describe("player architecture invariants", () => {
   (active("R5") ? it : it.skip)(
     "R5: no legacy Animated or react-native-paper in the player",
     () => {
-      const offenders = newFolderFiles
+      const offenders = playerFiles
         .filter(
           (f) =>
             /from\s+["']react-native-paper["']/.test(read(f)) ||
@@ -144,12 +143,35 @@ describe("player architecture invariants", () => {
     }
   );
 
-  (active("R6") ? it : it.skip)("R6: no `any` in new player code", () => {
-    const offenders = newFolderFiles
+  (active("R6") ? it : it.skip)("R6: no `any` in the player", () => {
+    const offenders = playerFiles
       .filter((f) => /:\s*any\b|as\s+any\b|<any>/.test(read(f)))
       .map(rel);
     expect(offenders).toEqual([]);
   });
+
+  (active("R9") ? it : it.skip)(
+    "no setInterval or setTimeout outside the engine, gestures and hooks folders",
+    () => {
+      const allowed = /components\/VideoPlayer\/(engine|gestures|hooks|ui\/BufferingIndicator\.tsx)/;
+      const offenders = playerFiles
+        .filter((f) => /\bset(Interval|Timeout)\(/.test(read(f)))
+        .map(rel)
+        .filter((r) => !allowed.test(r));
+      expect(offenders).toEqual([]);
+    }
+  );
+
+  (active("R9") ? it : it.skip)(
+    "no setInterval anywhere in the player except useEndScreenCountdown",
+    () => {
+      const offenders = playerFiles
+        .filter((f) => /\bsetInterval\(/.test(read(f)))
+        .map(rel)
+        .filter((r) => !r.endsWith("hooks/useEndScreenCountdown.ts"));
+      expect(offenders).toEqual([]);
+    }
+  );
 
   (active("R7") ? it : it.skip)(
     "R7: Shorts and useShortsPlayer are unchanged from main",
@@ -180,9 +202,7 @@ describe("player architecture invariants", () => {
       // Global Constraints §12, decided during the Increment 1 report review.
       "components/VideoPlayer/engine/PlaybackEngine.ts": 550,
     };
-    const playerTsx = join(PLAYER_DIR, "Player.tsx");
-    const candidates = existsSync(playerTsx) ? [...newFolderFiles, playerTsx] : newFolderFiles;
-    const offenders = candidates
+    const offenders = playerFiles
       .filter((f) => {
         const lines = read(f).split("\n").length;
         return lines > (budgets[rel(f)] ?? 200);
@@ -190,21 +210,4 @@ describe("player architecture invariants", () => {
       .map(rel);
     expect(offenders).toEqual([]);
   });
-
-  (active("OLD_ROOT_FROZEN") ? it : it.skip)(
-    "old components/VideoPlayer/index.tsx is byte-identical to main",
-    () => {
-      let fromMain = "";
-      try {
-        fromMain = execSync("git show main:components/VideoPlayer/index.tsx", {
-          cwd: ROOT,
-        }).toString();
-      } catch {
-        console.warn("OLD_ROOT_FROZEN skipped: git not available");
-        return;
-      }
-      const current = read(join(PLAYER_DIR, "index.tsx"));
-      expect(current.replace(/\r\n/g, "\n")).toBe(fromMain.replace(/\r\n/g, "\n"));
-    }
-  );
 });

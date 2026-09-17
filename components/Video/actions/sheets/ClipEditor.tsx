@@ -1,66 +1,23 @@
-/**
- * components/VideoPlayer/modals/VideoClipEditor.tsx
- * 
- * Clip editor modal for creating video clips
- * - Timeline with start/end markers
- * - Preview clip duration
- * - Save clip functionality
- * 
- * Production-ready, accessible
- */
-
-import React, { useState, useCallback } from "react";
-import {
-  View,
-  Text,
-  Modal,
-  StyleSheet,
-  Pressable,
-  TextInput,
-  Platform,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+// components/Video/actions/sheets/ClipEditor.tsx
+// Clip creation UI wired to the repository (via onCreate). Spec: docs/player/07-app-actions-and-repositories.md
+import React, { useCallback, useState } from "react";
+import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import Logger from "../../../utils/Logger";
+import { LIMITS } from "../../../../constants/config";
+import { makeError } from "../../../../services/appError";
+import type { ClipRecord } from "../../../../services/videoActions/VideoActionsRepository";
 
-interface VideoClipEditorProps {
-  /**
-   * Video ID
-   */
-  videoId: string;
-
-  /**
-   * Total video duration in milliseconds
-   */
-  duration: number;
-
-  /**
-   * Current playback position in milliseconds
-   */
-  currentPosition: number;
-
-  /**
-   * Whether modal is visible
-   */
-  visible: boolean;
-
-  /**
-   * Callback when modal should close
-   */
-  onClose: () => void;
-
-  /**
-   * Callback when clip is saved
-   */
-  onSave: (startTime: number, endTime: number) => Promise<void>;
+interface Props {
+  readonly visible: boolean;
+  readonly onClose: () => void;
+  readonly videoId: string;
+  readonly durationMs: number;
+  readonly currentPositionMs: number;
+  readonly onCreate: (startMs: number, endMs: number) => Promise<ClipRecord | null>;
 }
 
-/**
- * Format time for display
- */
 const formatTime = (ms: number): string => {
-  if (!ms || isNaN(ms)) return "0:00";
+  if (!ms || Number.isNaN(ms)) return "0:00";
   const total = Math.floor(ms / 1000);
   const s = total % 60;
   const m = Math.floor((total % 3600) / 60);
@@ -70,98 +27,54 @@ const formatTime = (ms: number): string => {
     : `${m}:${s.toString().padStart(2, "0")}`;
 };
 
-/**
- * VideoClipEditor Component
- */
-export function VideoClipEditor({
-  videoId,
-  duration,
-  currentPosition,
-  visible,
-  onClose,
-  onSave,
-}: VideoClipEditorProps) {
-  const [startTime, setStartTime] = useState(0);
-  const [endTime, setEndTime] = useState(duration);
+const VALIDATION_MESSAGE = makeError("validation").message;
+
+export function ClipEditor({ visible, onClose, videoId, durationMs, currentPositionMs, onCreate }: Props) {
+  const [startMs, setStartMs] = useState<number | null>(null);
+  const [endMs, setEndMs] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  /**
-   * Calculate clip duration
-   */
-  const clipDuration = Math.max(0, endTime - startTime);
+  const clipDuration = startMs !== null && endMs !== null ? Math.max(0, endMs - startMs) : 0;
 
-  /**
-   * Handle set start time to current position
-   */
-  const handleSetStartTime = useCallback(() => {
-    setStartTime(currentPosition);
-    Logger.info("[VideoClipEditor] Start time set", { startTime: currentPosition });
-  }, [currentPosition]);
-
-  /**
-   * Handle set end time to current position
-   */
-  const handleSetEndTime = useCallback(() => {
-    setEndTime(currentPosition);
-    Logger.info("[VideoClipEditor] End time set", { endTime: currentPosition });
-  }, [currentPosition]);
-
-  /**
-   * Handle save clip
-   */
-  const handleSave = useCallback(async () => {
-    if (startTime >= endTime) {
-      Alert.alert("Invalid Clip", "Start time must be before end time.");
-      return;
-    }
-
-    if (clipDuration < 5000) {
-      Alert.alert("Clip Too Short", "Clip must be at least 5 seconds long.");
-      return;
-    }
-
-    try {
-      setIsSaving(true);
-      Logger.info("[VideoClipEditor] Saving clip", {
-        videoId,
-        startTime,
-        endTime,
-        duration: clipDuration,
-      });
-
-      await onSave(startTime, endTime);
-
-      Logger.info("[VideoClipEditor] Clip saved successfully", { videoId });
-      Alert.alert("Clip Saved", "Your clip has been saved successfully!");
-      onClose();
-    } catch (error) {
-      Logger.error("[VideoClipEditor] Failed to save clip:", error);
-      Alert.alert("Error", "Failed to save clip. Please try again.");
-    } finally {
-      setIsSaving(false);
-    }
-  }, [startTime, endTime, clipDuration, videoId, onSave, onClose]);
-
-  /**
-   * Handle cancel
-   */
   const handleCancel = useCallback(() => {
-    setStartTime(0);
-    setEndTime(duration);
+    setStartMs(null);
+    setEndMs(null);
+    setError(null);
     onClose();
-    Logger.info("[VideoClipEditor] Clip editor cancelled", { videoId });
-  }, [duration, onClose, videoId]);
+  }, [onClose]);
+
+  const handleSave = useCallback(async () => {
+    const length = startMs !== null && endMs !== null ? endMs - startMs : Number.NaN;
+    const valid =
+      startMs !== null &&
+      endMs !== null &&
+      startMs >= 0 &&
+      endMs <= durationMs &&
+      startMs < endMs &&
+      length >= LIMITS.clipMinMs &&
+      length <= LIMITS.clipMaxMs;
+    if (!valid || startMs === null || endMs === null) {
+      setError(VALIDATION_MESSAGE);
+      return;
+    }
+    setIsSaving(true);
+    setError(null);
+    const clip = await onCreate(startMs, endMs);
+    setIsSaving(false);
+    if (clip) {
+      setStartMs(null);
+      setEndMs(null);
+      onClose();
+    } else {
+      setError(VALIDATION_MESSAGE);
+    }
+  }, [startMs, endMs, durationMs, onCreate, onClose]);
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={handleCancel}
-    >
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={handleCancel}>
       <View style={styles.backdrop}>
         <View style={styles.container}>
-          {/* Header */}
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Create Clip</Text>
             <Pressable onPress={handleCancel} accessible accessibilityLabel="Close clip editor" accessibilityRole="button">
@@ -169,23 +82,15 @@ export function VideoClipEditor({
             </Pressable>
           </View>
 
-          {/* Timeline Preview */}
-          <View style={styles.timelineContainer}>
-            <View style={styles.timelineTrack}>
-              <View style={[styles.clipSegment, { left: `${(startTime / duration) * 100}%`, width: `${(clipDuration / duration) * 100}%` }]} />
-            </View>
-          </View>
-
-          {/* Time Controls */}
           <View style={styles.timeControls}>
             <View style={styles.timeControl}>
               <Text style={styles.timeLabel}>Start Time</Text>
-              <Text style={styles.timeValue}>{formatTime(startTime)}</Text>
+              <Text style={styles.timeValue}>{startMs !== null ? formatTime(startMs) : "--:--"}</Text>
               <Pressable
                 style={styles.setButton}
-                onPress={handleSetStartTime}
+                onPress={() => setStartMs(currentPositionMs)}
                 accessible
-                accessibilityLabel={`Set start time to ${formatTime(currentPosition)}`}
+                accessibilityLabel="Set start"
                 accessibilityRole="button"
               >
                 <MaterialCommunityIcons name="play-circle" size={20} color="#065FD4" />
@@ -195,12 +100,12 @@ export function VideoClipEditor({
 
             <View style={styles.timeControl}>
               <Text style={styles.timeLabel}>End Time</Text>
-              <Text style={styles.timeValue}>{formatTime(endTime)}</Text>
+              <Text style={styles.timeValue}>{endMs !== null ? formatTime(endMs) : "--:--"}</Text>
               <Pressable
                 style={styles.setButton}
-                onPress={handleSetEndTime}
+                onPress={() => setEndMs(currentPositionMs)}
                 accessible
-                accessibilityLabel={`Set end time to ${formatTime(currentPosition)}`}
+                accessibilityLabel="Set end"
                 accessibilityRole="button"
               >
                 <MaterialCommunityIcons name="play-circle" size={20} color="#065FD4" />
@@ -209,13 +114,13 @@ export function VideoClipEditor({
             </View>
           </View>
 
-          {/* Clip Duration */}
           <View style={styles.durationContainer}>
             <Text style={styles.durationLabel}>Clip Duration:</Text>
             <Text style={styles.durationValue}>{formatTime(clipDuration)}</Text>
           </View>
 
-          {/* Action Buttons */}
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
           <View style={styles.actions}>
             <Pressable
               style={[styles.button, styles.cancelButton]}
@@ -231,7 +136,7 @@ export function VideoClipEditor({
             <Pressable
               style={[styles.button, styles.saveButton, isSaving && styles.saveButtonDisabled]}
               onPress={handleSave}
-              disabled={isSaving || clipDuration < 5000}
+              disabled={isSaving}
               accessible
               accessibilityLabel="Save clip"
               accessibilityRole="button"
@@ -241,7 +146,7 @@ export function VideoClipEditor({
               ) : (
                 <>
                   <MaterialCommunityIcons name="check" size={20} color="#FFFFFF" />
-                  <Text style={styles.saveButtonText}>Save Clip</Text>
+                  <Text style={styles.saveButtonText}>Save clip</Text>
                 </>
               )}
             </Pressable>
@@ -263,18 +168,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     padding: 20,
-    maxHeight: "80%",
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 16,
-      },
-    }),
   },
   header: {
     flexDirection: "row",
@@ -286,22 +179,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "700",
     color: "#000000",
-  },
-  timelineContainer: {
-    marginBottom: 24,
-  },
-  timelineTrack: {
-    height: 8,
-    backgroundColor: "#E0E0E0",
-    borderRadius: 4,
-    position: "relative",
-  },
-  clipSegment: {
-    position: "absolute",
-    top: 0,
-    height: 8,
-    backgroundColor: "#065FD4",
-    borderRadius: 4,
   },
   timeControls: {
     flexDirection: "row",
@@ -359,6 +236,12 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#065FD4",
   },
+  errorText: {
+    fontSize: 14,
+    color: "#B91C1C",
+    marginBottom: 12,
+    textAlign: "center",
+  },
   actions: {
     flexDirection: "row",
     gap: 12,
@@ -392,4 +275,3 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
 });
-
