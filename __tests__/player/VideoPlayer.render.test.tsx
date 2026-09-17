@@ -54,6 +54,12 @@ jest.mock("expo-screen-orientation", () => ({
   },
 }));
 
+// The relocated VideoActionBar (Increment 5) reads its default deps from
+// VideoActionsProvider, which eagerly imports the real downloadService/
+// localVideoActionsRepository singletons at module scope, pulling in the
+// native AsyncStorage module.
+jest.mock("@react-native-async-storage/async-storage", () => require("@react-native-async-storage/async-storage/jest/async-storage-mock"));
+
 // VideoSaveSheet (a VideoPlayer modal) now reads useSaved() from
 // SavedContext instead of the removed playlist service.
 jest.mock("../../contexts/SavedContext", () => ({

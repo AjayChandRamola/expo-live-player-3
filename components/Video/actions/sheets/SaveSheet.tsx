@@ -8,9 +8,9 @@
 import React, { useCallback } from "react";
 import { View, Text, Modal, StyleSheet, Pressable, Platform } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useSaved } from "../../../contexts/SavedContext";
+import { useSaved } from "../../../../contexts/SavedContext";
 
-interface VideoSaveSheetProps {
+interface SaveSheetProps {
   /**
    * Video ID
    */
@@ -33,14 +33,14 @@ interface VideoSaveSheetProps {
 }
 
 /**
- * VideoSaveSheet Component
+ * SaveSheet Component
  */
-export function VideoSaveSheet({
+export function SaveSheet({
   videoId,
   visible,
   onClose,
   onSaved,
-}: VideoSaveSheetProps) {
+}: SaveSheetProps) {
   const { isSaved, toggleSave } = useSaved();
   const saved = isSaved(videoId);
 
@@ -140,3 +140,7 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
 });
+
+// Compatibility alias so the old root (components/VideoPlayer/index.tsx)
+// keeps compiling until Increment 5 Task 10 repoints its imports.
+export { SaveSheet as VideoSaveSheet };
