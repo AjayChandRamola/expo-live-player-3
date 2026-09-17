@@ -62,21 +62,22 @@ describe("VideoActionBar", () => {
 
   it("shows the actions that work", () => {
     render(<VideoActionBar {...baseProps} />);
-    expect(screen.getByLabelText(/like/i)).toBeTruthy();
+    expect(screen.getByLabelText(/^like button/i)).toBeTruthy();
+    expect(screen.getByLabelText(/^dislike button/i)).toBeTruthy();
+    expect(screen.getByLabelText(/^clip button/i)).toBeTruthy();
     expect(screen.getByLabelText(/share/i)).toBeTruthy();
     expect(screen.getByLabelText(/save/i)).toBeTruthy();
   });
 
-  it("hides actions that have no verified implementation", () => {
+  it("hides download and thanks, which have no verified implementation or are pending a human decision", () => {
     render(<VideoActionBar {...baseProps} />);
     expect(screen.queryByLabelText(/download/i)).toBeNull();
-    expect(screen.queryByLabelText(/clip/i)).toBeNull();
-    expect(screen.queryByLabelText(/dislike/i)).toBeNull();
+    expect(screen.queryByLabelText(/thanks/i)).toBeNull();
   });
 
   it("pressing Like calls useVideoActions().like", () => {
     render(<VideoActionBar {...baseProps} />);
-    fireEvent.press(screen.getByLabelText(/like/i));
+    fireEvent.press(screen.getByLabelText(/^like button/i));
     expect(mockActions.like).toHaveBeenCalled();
   });
 
