@@ -1,6 +1,6 @@
 /**
- * components/VideoPlayer/VideoActionButton.tsx
- * 
+ * components/Video/actions/VideoActionButton.tsx
+ *
  * Individual action button component
  * - Pilled button with icon and label
  * - Active/inactive states

@@ -30,6 +30,7 @@ jest.mock("../../components/Video/VideoPlaybackContainer", () => ({
 }));
 
 const mockPlayNext = jest.fn().mockReturnValue(true);
+const mockSetAutoplay = jest.fn();
 jest.mock("../../contexts/PlayQueueContext", () => ({
   usePlayQueue: () => ({
     queue: [],
@@ -42,7 +43,18 @@ jest.mock("../../contexts/PlayQueueContext", () => ({
     playById: jest.fn(),
     playNext: mockPlayNext,
     playPrevious: jest.fn(),
-    setAutoplay: jest.fn(),
+    setAutoplay: mockSetAutoplay,
+  }),
+}));
+
+const mockSetAutoplayDefault = jest.fn();
+jest.mock("../../contexts/SettingsContext", () => ({
+  useSettings: () => ({
+    theme: "system",
+    autoplayDefault: true,
+    hydrated: true,
+    setTheme: jest.fn(),
+    setAutoplayDefault: mockSetAutoplayDefault,
   }),
 }));
 
@@ -138,6 +150,27 @@ describe("VideoScreen", () => {
       (containerProps[0].onFullscreenChange as (v: boolean) => void)(true);
     });
     expect(screen.queryByTestId("video-meta")).toBeNull();
+  });
+
+  it("passes isFullscreen to the container and updates it on fullscreen change", () => {
+    mockDetail({});
+    render(<VideoScreen />);
+    expect(containerProps[0].isFullscreen).toBe(false);
+
+    act(() => {
+      (containerProps[0].onFullscreenChange as (v: boolean) => void)(true);
+    });
+    expect(containerProps[containerProps.length - 1].isFullscreen).toBe(true);
+  });
+
+  it("onToggleAutoplay updates both the queue and persisted settings", () => {
+    mockDetail({});
+    render(<VideoScreen />);
+    act(() => {
+      (containerProps[0].onToggleAutoplay as (v: boolean) => void)(false);
+    });
+    expect(mockSetAutoplay).toHaveBeenCalledWith(false);
+    expect(mockSetAutoplayDefault).toHaveBeenCalledWith(false);
   });
 
   it("treats a missing route id as not found", () => {
