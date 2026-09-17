@@ -11,10 +11,10 @@
 
 import React, { useEffect } from "react";
 import { Share, Platform, Alert } from "react-native";
-import Logger from "../../../utils/Logger";
-import { forVideo } from "../../../services/shareLinkService";
+import Logger from "../../../../utils/Logger";
+import { forVideo } from "../../../../services/shareLinkService";
 
-interface VideoShareSheetProps {
+interface ShareSheetProps {
   /**
    * Video ID
    */
@@ -42,16 +42,16 @@ interface VideoShareSheetProps {
 }
 
 /**
- * VideoShareSheet Component
+ * ShareSheet Component
  * Opens native share sheet when visible becomes true
  */
-export function VideoShareSheet({
+export function ShareSheet({
   videoId,
   title = "Check out this video",
   url,
   visible,
   onClose,
-}: VideoShareSheetProps) {
+}: ShareSheetProps) {
   useEffect(() => {
     if (!visible) return;
 
@@ -102,4 +102,8 @@ export function VideoShareSheet({
   // This component doesn't render anything, it just triggers the share sheet
   return null;
 }
+
+// Compatibility alias so the old root (components/VideoPlayer/index.tsx)
+// keeps compiling until Increment 5 Task 10 repoints its imports.
+export { ShareSheet as VideoShareSheet };
 

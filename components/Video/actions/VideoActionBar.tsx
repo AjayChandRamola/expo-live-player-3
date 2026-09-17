@@ -18,9 +18,9 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { VideoActionButton } from "./VideoActionButton";
-import Logger from "../../utils/Logger";
+import Logger from "../../../utils/Logger";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { PLAYER_FEATURE_FLAGS } from "../../constants/config";
+import { PLAYER_FEATURE_FLAGS } from "../../../constants/config";
 
 export interface VideoActionBarProps {
   /**

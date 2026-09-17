@@ -2,10 +2,10 @@
 import React from "react";
 import { Share } from "react-native";
 import { render, waitFor } from "@testing-library/react-native";
-import { VideoShareSheet } from "../../components/VideoPlayer/modals/VideoShareSheet";
-import { forVideo } from "../../services/shareLinkService";
+import { ShareSheet } from "../../../components/Video/actions/sheets/ShareSheet";
+import { forVideo } from "../../../services/shareLinkService";
 
-describe("VideoShareSheet", () => {
+describe("ShareSheet", () => {
   let shareSpy: jest.SpyInstance;
 
   beforeEach(() => {
@@ -16,7 +16,7 @@ describe("VideoShareSheet", () => {
 
   it("shares the app deep link, not the raw media url", async () => {
     render(
-      <VideoShareSheet
+      <ShareSheet
         videoId="v1"
         title="Gayatri Yagya"
         url="https://cdn.test/secret.m3u8"
@@ -34,7 +34,7 @@ describe("VideoShareSheet", () => {
 
   it("includes the title in the shared message", async () => {
     render(
-      <VideoShareSheet videoId="v1" title="Gayatri Yagya" url="https://cdn.test/a.m3u8" visible onClose={jest.fn()} />,
+      <ShareSheet videoId="v1" title="Gayatri Yagya" url="https://cdn.test/a.m3u8" visible onClose={jest.fn()} />,
     );
 
     await waitFor(() => expect(shareSpy).toHaveBeenCalled());
@@ -45,7 +45,7 @@ describe("VideoShareSheet", () => {
   it("closes after sharing", async () => {
     const onClose = jest.fn();
     render(
-      <VideoShareSheet videoId="v1" title="T" url="https://cdn.test/a.m3u8" visible onClose={onClose} />,
+      <ShareSheet videoId="v1" title="T" url="https://cdn.test/a.m3u8" visible onClose={onClose} />,
     );
     await waitFor(() => expect(onClose).toHaveBeenCalled());
   });
@@ -54,7 +54,7 @@ describe("VideoShareSheet", () => {
     shareSpy.mockResolvedValue({ action: "dismissedAction" } as never);
     const onClose = jest.fn();
     render(
-      <VideoShareSheet videoId="v1" title="T" url="https://cdn.test/a.m3u8" visible onClose={onClose} />,
+      <ShareSheet videoId="v1" title="T" url="https://cdn.test/a.m3u8" visible onClose={onClose} />,
     );
     await waitFor(() => expect(onClose).toHaveBeenCalled());
   });
@@ -63,7 +63,7 @@ describe("VideoShareSheet", () => {
     shareSpy.mockRejectedValue(new Error("no share provider"));
     const onClose = jest.fn();
     render(
-      <VideoShareSheet videoId="v1" title="T" url="https://cdn.test/a.m3u8" visible onClose={onClose} />,
+      <ShareSheet videoId="v1" title="T" url="https://cdn.test/a.m3u8" visible onClose={onClose} />,
     );
     await waitFor(() => expect(shareSpy).toHaveBeenCalled());
     await waitFor(() => expect(onClose).toHaveBeenCalled());
@@ -71,7 +71,7 @@ describe("VideoShareSheet", () => {
 
   it("does not fire when not visible", () => {
     render(
-      <VideoShareSheet videoId="v1" title="T" url="https://cdn.test/a.m3u8" visible={false} onClose={jest.fn()} />,
+      <ShareSheet videoId="v1" title="T" url="https://cdn.test/a.m3u8" visible={false} onClose={jest.fn()} />,
     );
     expect(shareSpy).not.toHaveBeenCalled();
   });
