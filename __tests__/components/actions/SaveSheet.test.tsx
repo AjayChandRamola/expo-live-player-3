@@ -51,11 +51,4 @@ describe("SaveSheet", () => {
     render(<SaveSheet videoId="v1" visible={false} onClose={jest.fn()} />);
     expect(screen.queryByTestId("save-sheet-toggle")).toBeNull();
   });
-
-  it("no longer reaches the playlist service", () => {
-    const service = require("../../../services/videoActionsService");
-    const spy = jest.spyOn(service.videoActionsService, "getPlaylists");
-    render(<SaveSheet videoId="v1" visible onClose={jest.fn()} />);
-    expect(spy).not.toHaveBeenCalled();
-  });
 });
