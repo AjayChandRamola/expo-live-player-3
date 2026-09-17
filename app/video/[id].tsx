@@ -7,7 +7,6 @@ import { StateView } from "../../components/ui/StateView";
 import { Screen } from "../../components/ui/Screen";
 import UpNextList from "../../components/VideoFeed/UpNextList";
 import { usePlayQueue } from "../../contexts/PlayQueueContext";
-import { useSettings } from "../../contexts/SettingsContext";
 import { useVideoDetail } from "../../hooks/useVideoDetail";
 import { useRelatedVideos } from "../../hooks/useRelatedVideos";
 import { toVideoMetadata } from "../../services/videoMetadataAdapter";
@@ -33,7 +32,6 @@ export default function VideoScreen() {
   const { status, data, error, retry } = useVideoDetail(safeId);
   const relatedResult = useRelatedVideos(safeId);
   const queue = usePlayQueue();
-  const settings = useSettings();
 
   const [isMinimized, setIsMinimized] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -67,14 +65,6 @@ export default function VideoScreen() {
     setIsMinimized((prev) => !prev);
   }, []);
 
-  const handleToggleAutoplay = useCallback(
-    (enabled: boolean) => {
-      queue.setAutoplay(enabled);
-      settings.setAutoplayDefault(enabled);
-    },
-    [queue, settings],
-  );
-
   const handleUpNextPress = useCallback(
     (video: VideoMetadata) => {
       queue.playById(video.id);
@@ -103,12 +93,10 @@ export default function VideoScreen() {
         hasPrevious={queue.hasPrevious}
         isAutoplayEnabled={queue.isAutoplayEnabled}
         isMinimized={isMinimized}
-        isFullscreen={isFullscreen}
         onNext={handleNext}
         onPrevious={handlePrevious}
         onFinished={handleFinished}
         onToggleMinimize={handleToggleMinimize}
-        onToggleAutoplay={handleToggleAutoplay}
         onFullscreenChange={handleFullscreenChange}
       />
       {!isFullscreen ? (

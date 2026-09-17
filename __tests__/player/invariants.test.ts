@@ -17,8 +17,16 @@ type RuleId =
   | "R5"
   | "R6"
   | "R7"
-  | "R9";
-const ACTIVE_RULES: readonly RuleId[] = ["R1", "R2", "R3", "R4", "R5", "R6", "R7", "R9"];
+  | "R9"
+  | "OLD_ROOT_FROZEN";
+const ACTIVE_RULES: readonly RuleId[] = ["R1", "R2", "R3", "R4", "R5", "R6", "R7", "R9", "OLD_ROOT_FROZEN"];
+
+/**
+ * Increment 5 Task 10 made the one permitted edit to the old root (repointing
+ * it at the relocated action modules). From that point on the old root is
+ * frozen against this commit instead of main.
+ */
+const OLD_ROOT_BASELINE = "ee58f1e647c698e79aa38ea4433a1082555b2b2d";
 
 /** New-code folders. Rules R3-R6 and R9 apply here until Increment 7 widens them. */
 const NEW_FOLDERS = ["engine", "platform", "gestures", "ui", "hooks"].map((f) =>
@@ -189,4 +197,21 @@ describe("player architecture invariants", () => {
       .map(rel);
     expect(offenders).toEqual([]);
   });
+
+  (active("OLD_ROOT_FROZEN") ? it : it.skip)(
+    "old components/VideoPlayer/index.tsx is byte-identical to the pinned baseline",
+    () => {
+      let fromBaseline = "";
+      try {
+        fromBaseline = execSync(`git show ${OLD_ROOT_BASELINE}:components/VideoPlayer/index.tsx`, {
+          cwd: ROOT,
+        }).toString();
+      } catch {
+        console.warn("OLD_ROOT_FROZEN skipped: git not available");
+        return;
+      }
+      const current = read(join(PLAYER_DIR, "index.tsx"));
+      expect(current.replace(/\r\n/g, "\n")).toBe(fromBaseline.replace(/\r\n/g, "\n"));
+    }
+  );
 });
