@@ -34,7 +34,10 @@ function fakeRepo(): VideoActionsRepository & { resolveLike: (s: VideoActionStat
 }
 
 function wrapper(repository: VideoActionsRepository) {
-  return ({ children }: { children: React.ReactNode }) => <VideoActionsProvider deps={{ repository }}>{children}</VideoActionsProvider>;
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return <VideoActionsProvider deps={{ repository }}>{children}</VideoActionsProvider>;
+  }
+  return Wrapper;
 }
 
 describe("useVideoActions", () => {
