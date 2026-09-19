@@ -1,4 +1,4 @@
 {
-  "android": { "bundleBytes": 4941796, "assetBytes": 5071209, "assetCount": 47, "ttfCount": 20, "aabBytes": 82084113, "arm64DownloadMaxBytes": 31092348 },
-  "ios": { "bundleBytes": 4750938, "assetBytes": 4105051, "assetCount": 43, "ttfCount": 19 }
+  "android": { "bundleBytes": 4792394, "assetBytes": 2658869, "assetCount": 30, "ttfCount": 3, "aabBytes": 82084113, "arm64DownloadMaxBytes": 31092348 },
+  "ios": { "bundleBytes": 4557523, "assetBytes": 1335871, "assetCount": 25, "ttfCount": 1 }
 }
