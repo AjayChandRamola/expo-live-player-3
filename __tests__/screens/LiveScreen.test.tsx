@@ -13,7 +13,7 @@ jest.mock("react-native-safe-area-context", () => ({
 
 const mockPush = jest.fn();
 jest.mock("expo-router", () => ({ useRouter: () => ({ push: mockPush }) }));
-jest.mock("@react-navigation/native", () => ({ useIsFocused: () => true }));
+jest.mock("expo-router/react-navigation", () => ({ useIsFocused: () => true }));
 
 jest.mock("../../components/Video/VideoPlaybackContainer", () => ({
   VideoPlaybackContainer: () => {

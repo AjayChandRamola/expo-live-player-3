@@ -16,7 +16,7 @@ jest.mock("react-native-safe-area-context", () => ({
 }));
 
 jest.mock("expo-router", () => ({ useRouter: () => ({ push: jest.fn() }) }));
-jest.mock("@react-navigation/native", () => ({ useIsFocused: () => true }));
+jest.mock("expo-router/react-navigation", () => ({ useIsFocused: () => true }));
 
 jest.mock("../../contexts/SavedContext", () => ({
   useSaved: () => ({

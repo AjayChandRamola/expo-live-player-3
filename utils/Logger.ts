@@ -59,7 +59,7 @@ function error(scope: string | null, ...parts: any[]) {
 function installGlobalErrorHandlers() {
   try {
     // React Native/JSCore error hook
-    const anyGlobal = global as any;
+    const anyGlobal = globalThis as any;
     if (typeof anyGlobal.ErrorUtils?.setGlobalHandler === "function") {
       const defaultHandler = anyGlobal.ErrorUtils.getGlobalHandler?.();
       anyGlobal.ErrorUtils.setGlobalHandler((err: any, isFatal?: boolean) => {

@@ -1,6 +1,6 @@
 // app/(tabs)/live.tsx
 import React, { useCallback } from "react";
-import { useIsFocused } from "@react-navigation/native";
+import { useIsFocused } from "expo-router/react-navigation";
 import { useRouter } from "expo-router";
 import { Screen } from "../../components/ui/Screen";
 import { StateView } from "../../components/ui/StateView";
