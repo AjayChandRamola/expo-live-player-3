@@ -125,15 +125,17 @@ The 15 failing suites are the player UI and root regression suites — precisely
 
 Note on `expo-speech`: `hooks/useVoiceSearch.ts` imports `expo-speech`, which is not installed. The export still succeeds because the `Speech` binding is never used and Babel's TypeScript transform elides unused imports; the string `expo-speech` does not appear in the bundle. `tsc` correctly reports it. The hook itself is reachable (Shorts search bar).
 
-## 6. Native and device metrics (NOT MEASURED)
+## 6. Native and device metrics
 
-| Metric | Status | How to measure (Phase 0 for baseline, Phase 9 for result) |
+D-1 (`com.yagna.app`) and D-2 (local Gradle) resolved on 2026-09-19; Android release metrics below measured at commit `ea48b1c`. Full method and raw numbers: `.size-reports/baseline-android.md` (git-ignored; regenerate with the commands in that file).
+
+| Metric | Baseline | How to measure (Phase 0 for baseline, Phase 9 for result) |
 |---|---|---|
-| Android release AAB size | NOT MEASURED — no native project, no `android.package`, no `eas.json` | After D-1 and D-2: `npx expo prebuild -p android` then `cd android && ./gradlew :app:bundleRelease`; size of `android/app/build/outputs/bundle/release/app-release.aab`. Or `eas build -p android --profile production --local`. |
-| Play-delivered download size per ABI | NOT MEASURED | `bundletool build-apks --bundle=app-release.aab --output=app.apks --mode=default` then `bundletool get-size total --apks=app.apks --dimensions=ABI,SCREEN_DENSITY`. Report arm64-v8a and armeabi-v7a separately. |
-| Universal APK size | NOT MEASURED | `bundletool build-apks --mode=universal`; or `./gradlew :app:assembleRelease` (universal by default). |
+| Android release AAB size | 82,084,113 B (≈78.3 MB) | `npx expo prebuild -p android --clean` then `cd android && ./gradlew :app:bundleRelease`; size of `android/app/build/outputs/bundle/release/app-release.aab`. |
+| Play-delivered download size per ABI | arm64-v8a 30,892,638–31,092,348 B (MIN/MAX); armeabi-v7a 29,905,167–30,104,877 B; x86 31,631,933–31,831,643 B; x86_64 31,473,123–31,672,833 B | `bundletool build-apks --bundle=app-release.aab --output=app.apks --mode=default` then `bundletool get-size total --apks=app.apks --dimensions=ABI`. |
+| Universal APK size | 118,374,567 B (≈112.9 MB) compressed on disk; 152,272,949 B uncompressed content across 1,655 files | `bundletool build-apks --mode=universal`; or `./gradlew :app:assembleRelease` (universal by default). |
 | Installed size | NOT MEASURED (device needed; deferred per instruction) | `adb shell dumpsys package <pkg>` for `codePath`, then `adb shell du -sh <codePath>`; or Settings → Apps. |
-| Native library bytes per ABI | NOT MEASURED | `unzip -l app-universal.apk` filtered to `lib/` and grouped by ABI; or Android Studio APK Analyzer. |
+| Native library bytes per ABI (uncompressed, universal APK) | lib/x86_64 24,959,648 B; lib/x86 24,772,696 B; lib/arm64-v8a 23,382,656 B; lib/armeabi-v7a 16,213,892 B | `unzip -l app-universal.apk` filtered to `lib/` and grouped by ABI; or Android Studio APK Analyzer. |
 | Debug APK size | NOT MEASURED | `./gradlew :app:assembleDebug`. Reported for completeness only; not a target. |
 | iOS IPA / App Store thinned size | NOT MEASURED (requires macOS/Xcode or EAS iOS build) | `eas build -p ios --profile production` then App Store Connect "App File Sizes" report, or Xcode Organizer → App Thinning Size Report. |
 | Cold start / TTI | NOT MEASURED (device needed; deferred) | `adb shell am start -W -n <pkg>/.MainActivity` (TotalTime), 10 runs, median; TTI via a `performance.now()` mark at first paint in `app/_layout.tsx`, logged in dev builds only. |
