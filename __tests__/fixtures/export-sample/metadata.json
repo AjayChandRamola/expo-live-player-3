@@ -1,0 +1,13 @@
+{
+  "version": 0,
+  "bundler": "metro",
+  "fileMetadata": {
+    "android": {
+      "bundle": "_expo/static/js/android/entry-abc.hbc",
+      "assets": [
+        { "path": "assets/f1", "ext": "ttf" },
+        { "path": "assets/p1", "ext": "png" }
+      ]
+    }
+  }
+}
