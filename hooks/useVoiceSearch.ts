@@ -13,7 +13,6 @@
 
 import { useState, useCallback, useRef } from "react";
 import { Platform, Alert } from "react-native";
-import * as Speech from "expo-speech";
 import Logger from "../utils/Logger";
 
 // Note: For production, use expo-speech-recognition or a similar package
