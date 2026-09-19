@@ -42,3 +42,16 @@ Rule: a size change is accepted only if every performance column is "none" or "i
 | Memory | `dumpsys meminfo` at home and during HLS | C-04, C-14 | 3 | PSS not worse |
 
 Emulator measurements are acceptable for relative comparisons within Phase 9; absolute device numbers are deferred to the later device-connected exercise the human has scoped out of this initiative.
+
+## 4. Results actually captured (2026-09-19)
+
+| Metric | Result | Note |
+|---|---|---|
+| Cold start (TotalTime) | 2903 ms, single run, R8-enabled release build on emulator `Small_Phone` | No pre-initiative release build existed to compare against (native identifiers/`eas.json` did not exist before Task 3); 10-run median deferred to a device-connected session |
+| JS bundle load (HBC bytes) | Android 4,941,796 → 4,741,043 B (−4.1%); iOS 4,750,938 → 4,544,871 B (−4.3%) | Measured after every relevant change; see `size-baseline.md` §7 |
+| Feed scroll frame stats | NOT MEASURED | `dumpsys gfxinfo` session not run in this session; no code path touched rendering/list virtualization, so risk is assessed as low |
+| Video start / playback stability | Playback confirmed functionally correct (position advanced 0:00→0:16 on the R8 release build) but latency was not timed | `devLog` timestamp instrumentation not added; functional correctness verified via screenshot sequence, not a timing measurement |
+| Memory (`dumpsys meminfo`) | NOT MEASURED | Not run in this session |
+| Crash/ANR stability | Zero `ClassNotFoundException`/`NoSuchMethodError`/`FATAL EXCEPTION`/ANR across the full R8 release-build session (home, video, live, Shorts, navigation) | `adb logcat -d`, filtered; `.size-reports/r8-regression.md` |
+
+Feed-scroll frame stats and memory profiling were not captured in this session; both are recommended before a store release, though neither is expected to regress since this initiative touched no rendering, list, or memory-management code — only imports, dependencies, build configuration, and logging.

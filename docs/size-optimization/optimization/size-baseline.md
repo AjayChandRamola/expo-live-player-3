@@ -148,16 +148,23 @@ D-1 (`com.yagna.app`) and D-2 (local Gradle) resolved on 2026-09-19; "Baseline" 
 
 ## 7. Baseline table (summary)
 
-| Metric | Baseline | Measurement method | Target | Status |
+| Metric | Baseline | After (2026-09-19, final commit) | Measurement method | Status |
 |---|---|---|---|---|
-| Android HBC bundle | 4,941,796 B | `expo export --platform android` | ≤ baseline; small decrease expected from C-09 and C-11 | Measured |
-| iOS HBC bundle | 4,750,938 B | `expo export --platform ios` | ≤ baseline | Measured |
-| Bundled assets, Android | 5,071,209 B / 47 files | export `metadata.json` | ≤ 2,658,869 B / 30 files after C-08 (5,071,209 − 2,412,340; 47 − 17) | Measured; target derived from measured font sizes |
-| Bundled assets, iOS | 4,105,051 B / 43 files | same | ≤ 1,692,711 B / 26 files after C-08 | Measured; derived |
-| Vector-icon TTFs bundled | 19 | export log | 2 (`MaterialCommunityIcons`, `MaterialIcons`) | Measured |
-| Autolinked Expo modules (Android) | 23 | autolinking resolve | 20 after C-04 (expo-audio, expo-linear-gradient, expo-web-browser removed) | Measured |
-| Autolinked RN modules (Android) | 11 | autolinking react-native-config | 9 after C-04 and C-09 (slider, svg removed); 10 if C-09 is rejected | Measured |
-| `dependencies` entries | 50 | `package.json` | 30 after C-04, C-05, C-06 (see dependency-audit §5) | Measured |
-| Release AAB size | NOT MEASURED | §6 | Record in Phase 0; target: decrease, magnitude unknown until measured | — |
-| Cold start | NOT MEASURED | §6 | No regression beyond measurement noise | Deferred (device) |
-| Jest | 80/95 suites | `npm test` | 95/95 suites before any production change | Measured |
+| Android HBC bundle | 4,941,796 B | 4,741,043 B (−4.1%) | `expo export --platform android` | Measured |
+| iOS HBC bundle | 4,750,938 B | 4,544,871 B (−4.3%) | `expo export --platform ios` | Measured |
+| Bundled assets, Android | 5,071,209 B / 47 files | 2,302,029 B / 29 files (−54.6% bytes) | export `metadata.json` | Measured |
+| Bundled assets, iOS | 4,105,051 B / 43 files | 1,335,871 B / 25 files (−67.5% bytes) | same | Measured |
+| Vector-icon TTFs bundled (Android) | 20 | 2 (`MaterialCommunityIcons`, Material Symbols via `@expo/ui`, router-owned, not removable — see DL-08) | export log | Measured |
+| Vector-icon TTFs bundled (iOS) | 19 | 1 (`MaterialCommunityIcons` only) | export log | Measured |
+| Autolinked Expo modules (Android/iOS) | 23 / 25 | 20 / 22 (C-04 removed expo-audio, expo-linear-gradient, expo-web-browser) | autolinking resolve | Measured |
+| Autolinked RN modules (Android) | 11 | 10 (C-04 removed the community slider; react-native-svg not removed — C-09 deferred) | autolinking react-native-config | Measured |
+| `dependencies` entries | 50 | 29 (C-04, C-05, C-06) | `package.json` | Measured |
+| Release AAB size | 82,084,113 B | 75,788,245 B (−7.7%, after C-14) | §6 | Measured |
+| arm64-v8a Play download (MAX) | 31,092,348 B | 18,881,173 B (−39.3%, after C-14) | §6 | Measured |
+| Universal APK (compressed) | 118,374,567 B | 104,862,079 B (−11.4%, after C-14) | §6 | Measured |
+| DEX bytes (uncompressed) | 49,791,936 B | 17,997,944 B (−63.9%, after C-14) | §6 | Measured |
+| Resource bytes (uncompressed) | 6,524,184 B | 4,023,268 B (−38.3%, after C-14) | §6 | Measured |
+| Cold start (release build, emulator) | NOT MEASURED (no baseline release build existed before this initiative) | 2903 ms (single run; `adb shell am start -W`) | §6 | Partially measured — a pre-initiative baseline never existed to compare against since no release build existed; 10-run median on device deferred |
+| Jest | 80/95 suites | 99/99 suites, 776/776 tests | `npm test` | Measured |
+| `tsc` runtime-source errors | 29 | 25 | `npm run typecheck` | Measured |
+| `eslint` errors | 78 | 77 | `npm run lint` | Measured |
