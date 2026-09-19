@@ -25,7 +25,7 @@ import {
   Platform,
   Keyboard,
 } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect } from "expo-router/react-navigation";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { ShortCard } from "../../components/Shorts/ShortCard";

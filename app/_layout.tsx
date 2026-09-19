@@ -1,5 +1,5 @@
 // app/_layout.tsx
-import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
+import { DarkTheme, DefaultTheme, ThemeProvider } from "expo-router/react-navigation";
 import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as Linking from "expo-linking";
@@ -12,10 +12,17 @@ import { SavedProvider } from "@/contexts/SavedContext";
 import { SettingsProvider, useSettings } from "@/contexts/SettingsContext";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { parseDeepLink } from "@/services/deepLinkService";
+import Logger from "@/utils/Logger";
+
+if (__DEV__) {
+  Logger.installGlobalErrorHandlers();
+}
 
 export const unstable_settings = {
   anchor: "(tabs)",
 };
+
+export { ErrorBoundary } from "@/components/AppErrorBoundary";
 
 export default function RootLayout() {
   return (
