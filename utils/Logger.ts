@@ -43,9 +43,11 @@ function fmt(level: LogLevel, scope: string | Array<string> | null, ...parts: an
 }
 
 function debug(scope: string | null, ...parts: any[]) {
+  if (!__DEV__) return;
   cDebug(fmt("DEBUG", scope ?? null, ...parts));
 }
 function info(scope: string | null, ...parts: any[]) {
+  if (!__DEV__) return;
   cInfo(fmt("INFO", scope ?? null, ...parts));
 }
 function warn(scope: string | null, ...parts: any[]) {
