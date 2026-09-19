@@ -16,6 +16,7 @@
 | Jest | preset `jest-expo`; setup `__tests__/harness/setup.ts`; `.svg` mapped to `__mocks__/svgMock.js`; second project `jest.web.config.js` for `.web.test.ts` | 15 suites fail on the Reanimated 4 mock |
 | CI | none (`.github/` absent) | Quality gates are manual |
 | Production JS | `expo export` → Metro production transform (minify) → Hermes bytecode; assets copied to `assets/` with hashed names; `metadata.json` lists them | Verified by the baseline exports |
+| Confirmed 2026-09-19 | `npx expo config --type introspect` shows `output: 'static'`, `typedRoutes: true`, `reactCompiler: true`; no `jsEngine` or `newArchEnabled` keys anywhere in `app.json` (SDK 57 defaults: Hermes, New Architecture both on); `grep -c '"autolinking"' package.json` → `0` (no autolinking excludes) | C-12: confirmed, no change needed |
 
 ## 2. Target
 
