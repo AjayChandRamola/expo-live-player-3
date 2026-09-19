@@ -13,6 +13,13 @@ const FORBIDDEN_DEPENDENCIES = [
   "expo-linear-gradient",
   "expo-web-browser",
   "@react-native-community/slider",
+  "react-native-paper",
+  "react-native-calendars",
+  "react-native-collapsible",
+  "ajv",
+  "@expo-google-fonts/mukta",
+  "@expo-google-fonts/noto-sans-devanagari",
+  "@expo-google-fonts/roboto",
 ];
 
 describe("dependency guards", () => {
