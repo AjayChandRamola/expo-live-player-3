@@ -52,3 +52,20 @@
 2. Signing: EAS-managed keystore (default when using `eas build`) or a local keystore for `./gradlew bundleRelease` (the template generates a debug keystore only; a release keystore is needed for a Play upload but not for size measurement — a debug-signed release AAB has the same size).
 3. `expo-build-properties` installed at the SDK 57 line (`npx expo install expo-build-properties`).
 4. `ANDROID_HOME` set to `%LOCALAPPDATA%\Android\Sdk` for local Gradle builds.
+
+### Path actually used (2026-09-19)
+
+D-1 resolved to `com.yagna.app` for both `android.package` and `ios.bundleIdentifier` (no prior domain convention existed; change before any store submission if a different reverse-DNS domain is preferred). D-2 resolved to **local Gradle**, since Java 17.0.12 and the Android SDK (build-tools 36.1.0-rc1) were already present on the development machine, giving faster iteration than an EAS cloud build for the repeated Phase 0/Phase 5 measurement cycles.
+
+Exact commands used for every native build in this initiative:
+
+```bash
+export ANDROID_HOME="$LOCALAPPDATA/Android/Sdk"
+export ANDROID_SDK_ROOT="$ANDROID_HOME"
+npx expo prebuild -p android --clean --no-install
+cd android && ./gradlew :app:bundleRelease --no-daemon
+```
+
+Both the Task 4 baseline build (39m 56s, 683 tasks) and the Task 16 R8-enabled build (57m 12s, 629 tasks) succeeded with `BUILD SUCCESSFUL` using this exact sequence, signed with the debug keystore (`bundletool build-apks` warns about this; it does not affect measured size). `expo prebuild` mutates the `android`/`ios` npm scripts as an unrelated side effect (`expo start --android` → `expo run:android`); these two lines were manually reverted after each prebuild since they are out of scope for the size initiative's commits.
+
+Measurement tool: `bundletool` 1.18.3, downloaded from `https://github.com/google/bundletool/releases/download/1.18.3/bundletool-all-1.18.3.jar` and cached at `.size-reports/bundletool.jar` (git-ignored).
