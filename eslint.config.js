@@ -25,6 +25,13 @@ module.exports = defineConfig([
               message:
                 'Import the family directly, e.g. `import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons"`, so only the fonts you use are bundled.',
             },
+            { name: 'expo-audio', message: 'Removed for size (docs/size-optimization); zero import sites, expo-video owns audio playback.' },
+            { name: 'expo-linear-gradient', message: 'Removed for size (docs/size-optimization); zero import sites.' },
+            { name: 'expo-web-browser', message: 'Removed for size (docs/size-optimization); zero import sites.' },
+            { name: '@react-native-community/slider', message: 'Removed for size (docs/size-optimization); the player ProgressBar is custom.' },
+            { name: 'react-native-paper', message: 'Removed for size (docs/size-optimization); use existing components/ui.' },
+            { name: 'react-native-calendars', message: 'Removed for size (docs/size-optimization); zero import sites.' },
+            { name: 'react-native-collapsible', message: 'Removed for size (docs/size-optimization); zero import sites.' },
           ],
         },
       ],

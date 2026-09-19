@@ -7,8 +7,8 @@
 ## 1. Project Context
 - Product: Yagna/Yagya spiritual video and community mobile app.
 - Location: `D:\expo-live-player`
-- Stack: React Native, Expo Managed Workflow (SDK 54), Expo Router v6, TypeScript 5.9 (strict mode).
-- Expo SDK: 54.0.22; Node.js: 26.8.2; playback via `expo-video` ~3.0.11.
+- Stack: React Native 0.86, Expo Managed Workflow (SDK 57), Expo Router 57, TypeScript 6.0 (strict mode).
+- Expo SDK: 57.0.23; Node.js: 26.8.2; playback via `expo-video` ~57.0.4.
 - The `VideoPlayer` (`components/VideoPlayer/`) is the authoritative playback implementation, redesigned on 2026-09-16 (see `docs/player/README.md`). Structure: `index.tsx` (re-export), `Player.tsx` (composition root), `types.ts`, `constants.ts`, `tokens.ts`, `engine/` (event-driven playback engine and pure reducer), `platform/` (native and web adapters), `gestures/`, `hooks/` (root glue), `ui/` (controls and transient views). App actions (Like, Save, Share, Download, Clip, Report, Thanks) live in `components/Video/actions/` and persist through `services/videoActions/`. Dependency rules R1–R9 are enforced by `__tests__/player/invariants.test.ts`. Do not collapse folders or add files at the player root.
 - Queue and autoplay state live in `contexts/PlayQueueContext.tsx`; playback state is internal to the player and reaches the app only through `onStateChange`/`onPositionChange`. Content/domain data is served via `services/` (`videoService.ts`, `commentsService.ts`, `shortsSearchService.ts`).
 - Shorts playback uses a separate component, `components/Shorts/ShortVideoPlayer.tsx`, per the "Shorts remains separate" rule below.
