@@ -24,7 +24,7 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import { VideoView } from "expo-video";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,

@@ -1,5 +1,5 @@
 // components/VideoPlayer/ui/SwipeIndicator.tsx
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { playerTokens } from "../tokens";

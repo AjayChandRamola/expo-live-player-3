@@ -44,6 +44,27 @@ describe("Logger", () => {
     jest.restoreAllMocks();
   });
 
+  it("is silent for debug and info when __DEV__ is false, and still emits warn and error", () => {
+    const g = globalThis as { __DEV__?: boolean };
+    const previous = g.__DEV__;
+    g.__DEV__ = false;
+    try {
+      jest.resetModules();
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const prod = require("../utils/Logger").default as typeof Logger;
+      prod.debug("Scope", "d");
+      prod.info("Scope", "i");
+      prod.warn("Scope", "w");
+      prod.error("Scope", "e");
+      expect(debugSpy).not.toHaveBeenCalled();
+      expect(infoSpy).not.toHaveBeenCalled();
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      expect(errorSpy).toHaveBeenCalledTimes(1);
+    } finally {
+      g.__DEV__ = previous;
+    }
+  });
+
   it("exposes the documented API on the default export", () => {
     expect(typeof Logger.debug).toBe("function");
     expect(typeof Logger.info).toBe("function");

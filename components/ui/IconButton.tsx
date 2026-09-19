@@ -1,7 +1,7 @@
 // components/ui/IconButton.tsx
 import React from "react";
 import { Pressable, StyleSheet, useColorScheme } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { getColors, tokens } from "../../constants/tokens";
 
 export interface IconButtonProps {

@@ -1,6 +1,6 @@
 // components/VideoPlayer/ui/controls/ControlButton.tsx
 // The one pressable primitive for every player control. Spec: 06 §5.1
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import React, { memo, useCallback } from "react";
 import { Pressable, StyleSheet } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";

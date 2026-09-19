@@ -48,3 +48,12 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+## Building a release
+
+Android identifiers and build flags live in `app.json`; EAS profiles in `eas.json`.
+
+- Local AAB (needs Java 17 and the Android SDK, `ANDROID_HOME` set): `npx expo prebuild -p android --clean && cd android && ./gradlew :app:bundleRelease`
+- EAS: `eas build -p android --profile production` (AAB) or `--profile preview` (APK for QA).
+- Keep `android/app/build/outputs/mapping/release/mapping.txt` with every release: R8 obfuscation is enabled and crash stacks need it.
+- Size check before merging: `npm run size:export && npm run size:check` (budget in `docs/size-optimization/size-budget.json`).

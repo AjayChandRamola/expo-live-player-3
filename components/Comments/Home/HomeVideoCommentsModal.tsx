@@ -30,7 +30,7 @@ import Animated, {
   withTiming,
   runOnJS,
 } from "react-native-reanimated";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { CommentComposer } from "../CommentComposer";
 import { CommentItem } from "../CommentItem";
 import { RepliesList } from "../RepliesList";

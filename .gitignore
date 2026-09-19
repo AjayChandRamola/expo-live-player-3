@@ -48,3 +48,11 @@ app-example
 
 # Local git worktrees (SDD execution workspaces)
 .worktrees/
+
+# Size measurement outputs (docs/size-optimization)
+.baseline-export/
+.size-reports/
+*.apks
+*.aab
+*.apk
+*.ipa

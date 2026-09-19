@@ -3,7 +3,7 @@
 // Quality and Captions were removed — no verified implementation.
 import React from "react";
 import { Modal, Platform, Pressable, StyleSheet, Text, View } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 
 interface Props {
   readonly visible: boolean;

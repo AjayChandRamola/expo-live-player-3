@@ -27,7 +27,7 @@ import {
   Platform,
   Animated as RNAnimated,
 } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CommentItem } from "./CommentItem";
 import { RepliesList } from "./RepliesList";

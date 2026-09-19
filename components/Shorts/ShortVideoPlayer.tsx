@@ -23,7 +23,7 @@ import {
   Platform,
 } from "react-native";
 import { VideoView, useVideoPlayer } from "expo-video";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import type { VideoMetadata } from "../../types/video";
 import Logger from "../../utils/Logger";
 import { Colors } from "../../constants/theme";

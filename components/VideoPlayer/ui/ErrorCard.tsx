@@ -1,5 +1,5 @@
 // components/VideoPlayer/ui/ErrorCard.tsx
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import React from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { MAX_RETRIES } from "../constants";
