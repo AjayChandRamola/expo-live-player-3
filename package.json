@@ -22,15 +22,9 @@
     "managed": "npx expo-doctor && npx eslint \"app/**/*.{ts,tsx}\" --max-warnings 0 && npx expo start"
   },
   "dependencies": {
-    "@babel/core": "~7.21.0",
     "@expo/vector-icons": "^15.0.3",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-masked-view/masked-view": "0.3.2",
-    "@types/react": "~19.1.10",
-    "@types/react-dom": "~19.1.7",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^7.0.0",
     "expo": "^57.0.23",
     "expo-asset": "~57.0.17",
     "expo-brightness": "~57.0.2",
@@ -48,7 +42,6 @@
     "expo-symbols": "~57.0.3",
     "expo-system-ui": "~57.0.4",
     "expo-video": "~57.0.4",
-    "prettier": "^3.6.2",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-native": "0.86.3",
@@ -59,8 +52,7 @@
     "react-native-svg": "15.15.4",
     "react-native-web": "~0.21.0",
     "react-native-webview": "13.16.1",
-    "react-native-worklets": "0.10.1",
-    "typescript": "~5.9.2"
+    "react-native-worklets": "0.10.1"
   },
   "devDependencies": {
     "@babel/core": "^7.21.0",
@@ -73,9 +65,12 @@
     "babel-plugin-module-resolver": "^5.0.2",
     "eslint": "^9.38.0",
     "eslint-config-expo": "~57.0.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.0",
     "jest": "^29.7.0",
     "jest-expo": "~57.0.5",
-    "npm-force-resolutions": "^0.0.10",
+    "prettier": "^3.6.2",
     "react-native-svg-transformer": "^1.5.2",
     "react-test-renderer": "^19.2.3",
     "typescript": "~6.0.3"
