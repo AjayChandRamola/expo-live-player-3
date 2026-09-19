@@ -25,7 +25,7 @@ import {
   Keyboard,
   ScrollView,
 } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { sanitizeCommentText, validateCommentText, COMMENT_CONFIG } from "../../utils/commentValidation";
 import Logger from "../../utils/Logger";
 

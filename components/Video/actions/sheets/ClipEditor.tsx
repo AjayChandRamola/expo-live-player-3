@@ -2,7 +2,7 @@
 // Clip creation UI wired to the repository (via onCreate). Spec: docs/player/07-app-actions-and-repositories.md
 import React, { useCallback, useState } from "react";
 import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, View } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { LIMITS } from "../../../../constants/config";
 import { makeError } from "../../../../services/appError";
 import type { ClipRecord } from "../../../../services/videoActions/VideoActionsRepository";

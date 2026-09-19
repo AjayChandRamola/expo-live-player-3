@@ -12,4 +12,22 @@ module.exports = defineConfig([
     // longer resolve from their archived location, which is expected.
     ignores: ['dist/*', '.worktrees/**', '.baseline-export/**', 'docs/history/**'],
   },
+  {
+    // Size guard (docs/size-optimization): the @expo/vector-icons barrel
+    // requires every icon family eagerly and bundles all 15 fonts (4 MB).
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@expo/vector-icons',
+              message:
+                'Import the family directly, e.g. `import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons"`, so only the fonts you use are bundled.',
+            },
+          ],
+        },
+      ],
+    },
+  },
 ]);

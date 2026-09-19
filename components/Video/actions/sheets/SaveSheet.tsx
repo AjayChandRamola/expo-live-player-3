@@ -7,7 +7,7 @@
 
 import React, { useCallback } from "react";
 import { View, Text, Modal, StyleSheet, Pressable, Platform } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useSaved } from "../../../../contexts/SavedContext";
 
 interface SaveSheetProps {
